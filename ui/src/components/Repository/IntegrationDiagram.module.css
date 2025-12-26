@@ -1,0 +1,102 @@
+.container {
+    padding: 1rem;
+    background-color: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+}
+
+.loading {
+    padding: 2rem;
+    text-align: center;
+    color: #6b7280;
+}
+
+.statsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.statBox {
+    background-color: #f9fafb;
+    padding: 1rem;
+    border-radius: 6px;
+    text-align: center;
+    border: 1px solid #f3f4f6;
+}
+
+.statValue {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+    line-height: 1;
+    margin-bottom: 0.25rem;
+}
+
+.statLabel {
+    font-size: 0.75rem;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.detailsRow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+}
+
+.detailsColumn {
+    flex: 1;
+    min-width: 250px;
+}
+
+.columnTitle {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid #e5e7eb;
+    padding-bottom: 0.5rem;
+}
+
+.list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.listItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 0.875rem;
+}
+
+.listItem:last-child {
+    border-bottom: none;
+}
+
+.targetName {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    color: #4b5563;
+    word-break: break-all;
+}
+
+.countBadge {
+    background-color: #e5e7eb;
+    color: #374151;
+    font-size: 0.75rem;
+    padding: 0.125rem 0.5rem;
+    border-radius: 9999px;
+    font-weight: 500;
+}
+
+.emptyText {
+    color: #9ca3af;
+    font-style: italic;
+    font-size: 0.875rem;
+}

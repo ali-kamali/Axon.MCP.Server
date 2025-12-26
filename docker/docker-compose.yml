@@ -1,0 +1,339 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg15
+    container_name: axon-postgres
+    env_file:
+      - ../.env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U axon" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - axon-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: axon-redis
+    env_file:
+      - ../.env
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping" ]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - axon-network
+
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.fast
+    container_name: axon-api
+    command: /opt/venv/bin/uvicorn src.api.main:app --host 0.0.0.0 --port 8080 --reload
+    ports:
+      - "8080:8080"
+    expose:
+      - "9090"
+    env_file:
+      - ../.env
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL}
+      CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND}
+      PYTHONPATH: /app
+      WATCHFILES_FORCE_POLLING: "true"
+    volumes:
+      - ../src:/app/src:Z
+      - ../cache:/app/cache:Z
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/api/v1/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - axon-network
+    # user: "1000:1000"  # Commented out for volume mount compatibility on Linux
+
+  mcp-server:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.fast
+    container_name: axon-mcp-server
+    command: /opt/venv/bin/python -m src.mcp_server.main
+    ports:
+      - "8001:8001" # MCP HTTP transport port
+    expose:
+      - "9090"
+    env_file:
+      - ../.env
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      PYTHONPATH: /app
+      MCP_TRANSPORT: ${MCP_TRANSPORT:-http}
+      MCP_HTTP_HOST: ${MCP_HTTP_HOST:-0.0.0.0}
+      MCP_HTTP_PORT: ${MCP_HTTP_PORT:-8001}
+    volumes:
+      - ../src:/app/src:Z
+      - ../cache:/app/cache:Z
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8001/api/v1/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - axon-network
+    # user: "1000:1000"  # Commented out for volume mount compatibility on Linux
+    # Note: MCP server now supports both stdio and HTTP transports
+    # HTTP transport enables remote AI connections via URL
+
+  worker:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.fast
+    container_name: axon-worker
+    # Core tasks (CPU bound): keeping concurrency low (1)
+    command: /opt/venv/bin/celery -A src.workers.celery_app:celery_app worker --loglevel=info --concurrency=1 --queues=repository_sync,file_parsing,embeddings,default
+    env_file:
+      - ../.env
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL}
+      CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND}
+      PYTHONPATH: /app
+      DOTNET_gcServer: "0" # Use Workstation GC to save memory (prevents OOM)
+      DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+    expose:
+      - "9090"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ../src:/app/src:Z
+      - ../cache:/app/cache:Z
+    networks:
+      - axon-network
+    restart: unless-stopped
+    # user: "1000:1000"  # Commented out for volume mount compatibility on Linux
+
+
+  enrichment-worker:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.fast
+    container_name: axon-enrichment-worker
+    # AI tasks (IO bound): higher concurrency (8) to handle multiple LLM requests
+    command: /opt/venv/bin/celery -A src.workers.celery_app:celery_app worker --loglevel=info --concurrency=8 --queues=ai_enrichment,repository_aggregation
+    env_file:
+      - ../.env
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL}
+      CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND}
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL}
+      PYTHONPATH: /app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ../src:/app/src:Z
+      - ../cache:/app/cache:Z
+    networks:
+      - axon-network
+    restart: unless-stopped
+    # user: "1000:1000"  # Commented out for volume mount compatibility on Linux
+
+
+  beat:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.fast
+    container_name: axon-beat
+    command: /opt/venv/bin/celery -A src.workers.celery_app:celery_app beat --loglevel=info
+    env_file:
+      - ../.env
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL}
+      PYTHONPATH: /app
+      CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND}
+    volumes:
+      - ../src:/app/src:Z
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - axon-network
+    # user: "1000:1000"  # Commented out for volume mount compatibility on Linux
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: axon-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro,Z
+      - ./alerts.yml:/etc/prometheus/alerts.yml:ro,Z
+      - prometheus_data:/prometheus:Z
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    networks:
+      - axon-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: axon-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./grafana/datasources:/etc/grafana/provisioning/datasources
+    depends_on:
+      - prometheus
+    networks:
+      - axon-network
+
+  ui:
+    build:
+      context: ../ui
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_BASE_URL=http://10.30.81.101/
+    container_name: axon-ui
+    ports:
+      - "80:80"
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - axon-network
+    labels:
+      - "component=frontend"
+      - "app=axon-mcp-ui"
+
+  postgres-exporter:
+    image: quay.io/prometheuscommunity/postgres-exporter:latest
+    container_name: axon-postgres-exporter
+    expose:
+      - "9187"
+    env_file:
+      - ../.env
+    environment:
+      - DATA_SOURCE_NAME=${POSTGRES_EXPORTER_DATA_SOURCE_NAME:-postgresql://${POSTGRES_USER:-axon}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-axon_mcp}?sslmode=disable}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "wget", "--spider", "-q", "http://localhost:9187/metrics" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+        reservations:
+          cpus: '0.1'
+          memory: 64M
+    labels:
+      - "monitoring=metrics"
+      - "component=exporter"
+      - "database=postgres"
+    networks:
+      - axon-network
+
+  redis-exporter:
+    image: oliver006/redis_exporter:latest
+    container_name: axon-redis-exporter
+    expose:
+      - "9121"
+    env_file:
+      - ../.env
+    environment:
+      - REDIS_ADDR=${REDIS_EXPORTER_REDIS_ADDR:-redis://:${REDIS_PASSWORD}@redis:6379}
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "/redis_exporter", "--version" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+        reservations:
+          cpus: '0.1'
+          memory: 64M
+    labels:
+      - "monitoring=metrics"
+      - "component=exporter"
+      - "cache=redis"
+    networks:
+      - axon-network
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+networks:
+  axon-network:
+    driver: bridge

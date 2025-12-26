@@ -1,0 +1,73 @@
+groups:
+  - name: axon_mcp_alerts
+    interval: 30s
+    rules:
+      # API Alerts
+      - alert: HighAPIErrorRate
+        expr: rate(api_requests_total{status=~"5.."}[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High API error rate detected"
+          description: "API error rate is {{ $value }} errors/sec"
+
+      - alert: SlowAPIResponses
+        expr: histogram_quantile(0.95, rate(api_request_duration_seconds_bucket[5m])) > 1.0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Slow API responses"
+          description: "95th percentile response time is {{ $value }}s"
+
+      # Parsing Alerts
+      - alert: HighParsingErrors
+        expr: rate(parsing_errors_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High parsing error rate"
+          description: "Parsing errors at {{ $value }} errors/sec"
+
+      # Search Alerts
+      - alert: SlowSearchQueries
+        expr: histogram_quantile(0.95, rate(search_duration_seconds_bucket[5m])) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Slow search queries"
+          description: "95th percentile search time is {{ $value }}s"
+
+      # System Alerts
+      - alert: HighMemoryUsage
+        expr: memory_usage_bytes > 2000000000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage"
+          description: "Memory usage is {{ $value | humanize }}B"
+
+      - alert: HighCPUUsage
+        expr: cpu_usage_percent > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage"
+          description: "CPU usage is {{ $value }}%"
+
+      # Database Alerts
+      - alert: SlowDatabaseQueries
+        expr: histogram_quantile(0.95, rate(db_query_duration_seconds_bucket[5m])) > 1.0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Slow database queries"
+          description: "95th percentile query time is {{ $value }}s"
+
+

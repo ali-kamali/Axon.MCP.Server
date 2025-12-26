@@ -1,0 +1,67 @@
+# Fast Dockerfile using pre-built base image
+# First build the base: docker build -f docker/Dockerfile.base -t axon-base:latest .
+# Then use this Dockerfile in docker-compose.yml
+
+# Use pre-built base image with all dependencies
+FROM axon-base:latest as builder
+
+# Production stage
+FROM python:3.11-slim
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PATH="/opt/venv/bin:$PATH" \
+    DOTNET_ROOT=/usr/share/dotnet \
+    PATH="$PATH:/usr/share/dotnet"
+
+# Install runtime dependencies (minimal - .NET SDK already in base)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    curl \
+    libcurl4 \
+    libcurl4-gnutls-dev \
+    ca-certificates \
+    libicu-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy .NET SDK from base image
+COPY --from=builder /usr/share/dotnet /usr/share/dotnet
+RUN ln -sf /usr/share/dotnet/dotnet /usr/bin/dotnet
+
+# Copy virtual environment from base image (includes all dependencies)
+COPY --from=builder /opt/venv /opt/venv
+
+# Copy pre-built Roslyn analyzer from base image
+COPY --from=builder /opt/roslyn /opt/roslyn
+
+# Create app directory
+WORKDIR /app
+
+# Create non-root user
+RUN useradd -m -u 1000 axon && \
+    chown -R axon:axon /app
+
+# Create cache directory BEFORE copying code
+RUN mkdir -p /app/cache && chown -R axon:axon /app/cache
+
+# Create roslyn_analyzer directory and copy pre-built binaries
+RUN mkdir -p /app/roslyn_analyzer/bin/Release/net9.0 && \
+    cp -r /opt/roslyn/* /app/roslyn_analyzer/bin/Release/net9.0/ && \
+    chown -R axon:axon /app/roslyn_analyzer
+
+# Copy application code (Python source only - Roslyn already built)
+COPY --chown=axon:axon . /app/
+
+# Switch to non-root user
+USER axon
+
+# Expose ports
+EXPOSE 8001 8080
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:8080/api/v1/health || exit 1
+
+# Default command (can be overridden in docker-compose)
+CMD ["/opt/venv/bin/uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8080"]

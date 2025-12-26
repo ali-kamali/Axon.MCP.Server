@@ -1,0 +1,51 @@
+:root {
+  /* Core palette */
+  --color-bg: #0e1116;
+  --color-surface: #161b22;
+  --color-text: #e6edf3;
+  --color-text-primary: var(--color-text);
+  --color-text-secondary: #8b949e;
+  --color-muted: #8b949e;
+  --color-accent: #2f81f7;
+  --color-primary: var(--color-accent);
+  --color-primary-light: #4c8dff;
+  --color-primary-dark: #1f6fe0;
+  --color-background: var(--color-bg);
+  --color-background-elevated: var(--color-surface);
+  --color-background-hover: rgba(255, 255, 255, 0.05);
+  --color-border: rgba(255, 255, 255, 0.12);
+  --color-border-hover: rgba(255, 255, 255, 0.24);
+  --color-status-success: #2ea043;
+  --color-status-error: #f85149;
+  --color-status-warning: #f9a825;
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --spacing-sm: var(--space-2);
+  --spacing-md: var(--space-3);
+  --spacing-lg: var(--space-4);
+
+  /* Border radii */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --border-radius-sm: var(--radius-sm);
+  --border-radius-md: var(--radius-md);
+
+  /* Typography */
+  --font-size-md: 1rem;
+  --font-size-xl: 1.5rem;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
+}
+
+

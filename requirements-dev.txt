@@ -1,0 +1,19 @@
+# Testing
+pytest==8.1.1
+pytest-asyncio==0.23.5
+pytest-cov==4.1.0
+pytest-mock==3.12.0
+faker==24.0.0
+
+# Code Quality
+black==24.2.0
+flake8==7.0.0
+mypy==1.8.0
+isort==5.13.2
+pylint==3.0.3
+bandit==1.7.7
+
+# Development
+pre-commit==3.6.0
+ipython==8.22.0
+

@@ -1,0 +1,34 @@
+.health_container {
+  background: var(--color-surface);
+  padding: var(--space-6);
+  border-radius: var(--radius-md);
+}
+
+.health_header {
+  font-weight: 600;
+  margin-bottom: var(--space-4);
+}
+
+.health_grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+}
+
+.health_item {
+  background: rgba(255, 255, 255, 0.03);
+  padding: var(--space-4);
+  border-radius: var(--radius-sm);
+}
+
+.health_label {
+  color: var(--color-muted);
+  display: block;
+  margin-bottom: var(--space-2);
+}
+
+.health_value {
+  font-weight: 500;
+}
+
+

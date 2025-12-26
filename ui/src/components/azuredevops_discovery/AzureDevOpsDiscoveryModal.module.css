@@ -1,0 +1,342 @@
+.modal_overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: grid;
+  place-items: center;
+  z-index: 1000;
+  padding: var(--space-4);
+}
+
+.modal_content {
+  background: var(--color-background);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-lg);
+  max-width: 900px;
+  width: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.modal_header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-6);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal_title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.close_button {
+  background: transparent;
+  border: none;
+  color: var(--color-muted);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: var(--space-2);
+  line-height: 1;
+  transition: color 0.2s;
+}
+
+.close_button:hover {
+  color: var(--color-text);
+}
+
+.discovery_form {
+  padding: var(--space-6);
+  display: grid;
+  gap: var(--space-4);
+}
+
+.form_row {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.form_label {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.form_input {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+  color: var(--color-text);
+  font-size: 1rem;
+}
+
+.form_input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px rgba(47, 129, 247, 0.2);
+}
+
+.field_hint {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--color-muted);
+}
+
+.form_actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.primary_button {
+  background: var(--color-accent);
+  color: #0b0f14;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: var(--space-3) var(--space-4);
+  cursor: pointer;
+  font-weight: 600;
+  transition: filter 0.2s;
+}
+
+.primary_button:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.primary_button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.secondary_button {
+  background: transparent;
+  color: var(--color-text);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3) var(--space-4);
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.secondary_button:hover:not(:disabled) {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.secondary_button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.danger_button {
+  background: #f85149;
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: var(--space-3) var(--space-4);
+  cursor: pointer;
+  font-weight: 600;
+  transition: filter 0.2s;
+}
+
+.danger_button:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.danger_button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.text_button {
+  background: transparent;
+  border: none;
+  color: var(--color-accent);
+  cursor: pointer;
+  font-size: 0.9rem;
+  text-decoration: underline;
+  padding: var(--space-1) var(--space-2);
+}
+
+.text_button:hover:not(:disabled) {
+  color: var(--color-text);
+}
+
+.text_button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.error_message {
+  background: rgba(248, 81, 73, 0.15);
+  border: 1px solid rgba(248, 81, 73, 0.4);
+  color: #f85149;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+}
+
+.error_message strong {
+  display: block;
+  margin-bottom: var(--space-1);
+}
+
+.results_container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.stats_bar {
+  display: flex;
+  gap: var(--space-6);
+  padding: var(--space-4) var(--space-6);
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stat_item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.stat_label {
+  color: var(--color-muted);
+  font-size: 0.9rem;
+}
+
+.stat_value {
+  color: var(--color-text);
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.stat_value_tracked {
+  color: #3fb950;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.stat_value_untracked {
+  color: var(--color-accent);
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.selection_bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-3) var(--space-6);
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.selection_info {
+  color: var(--color-text);
+  font-size: 0.9rem;
+}
+
+.selection_actions {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.repositories_list {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-4) var(--space-6);
+  display: grid;
+  gap: var(--space-3);
+}
+
+.repository_item {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-md);
+  transition: all 0.2s;
+}
+
+.repository_item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.repository_tracked {
+  border-color: rgba(63, 185, 80, 0.3);
+  background: rgba(63, 185, 80, 0.05);
+}
+
+.repository_checkbox {
+  margin-top: var(--space-1);
+  cursor: pointer;
+  width: 18px;
+  height: 18px;
+}
+
+.repository_info {
+  flex: 1;
+  display: grid;
+  gap: var(--space-2);
+}
+
+.repository_header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.repository_name {
+  font-weight: 600;
+  color: var(--color-text);
+  font-size: 1.05rem;
+}
+
+.tracked_badge {
+  background: rgba(63, 185, 80, 0.2);
+  color: #3fb950;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.repository_path {
+  color: var(--color-muted);
+  font-size: 0.9rem;
+  font-family: monospace;
+}
+
+.repository_description {
+  color: var(--color-text);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.repository_meta {
+  display: flex;
+  gap: var(--space-2);
+  color: var(--color-muted);
+  font-size: 0.85rem;
+}
+
+.modal_footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-6);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.02);
+}

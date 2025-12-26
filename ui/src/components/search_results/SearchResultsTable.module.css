@@ -1,0 +1,86 @@
+.results_container {
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  padding: var(--space-6);
+}
+
+.results_table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.results_table thead th {
+  text-align: left;
+  color: var(--color-muted);
+  font-weight: 600;
+  padding-bottom: var(--space-2);
+}
+
+.results_table tbody tr + tr td {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.results_table td {
+  padding: var(--space-3) 0;
+  vertical-align: top;
+}
+
+.symbol_name {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.symbol_fqn {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--color-muted);
+  margin-top: var(--space-1);
+}
+
+.repository_name {
+  font-weight: 500;
+}
+
+.language_badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-lg);
+  background: rgba(47, 129, 247, 0.15);
+  color: #2f81f7;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.location_cell {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--color-muted);
+}
+
+.detail_button {
+  background: transparent;
+  color: var(--color-accent);
+  border: 1px solid rgba(47, 129, 247, 0.4);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.detail_button:hover {
+  background: rgba(47, 129, 247, 0.1);
+}
+
+.empty_state {
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  padding: var(--space-8);
+  text-align: center;
+  color: var(--color-muted);
+}
+
+

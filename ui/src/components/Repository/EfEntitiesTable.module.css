@@ -1,0 +1,72 @@
+.container {
+    overflow-x: auto;
+    width: 100%;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+}
+
+.loading,
+.empty {
+    padding: 2rem;
+    text-align: center;
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+    text-align: left;
+}
+
+.table th {
+    background-color: #f9fafb;
+    padding: 0.75rem 1rem;
+    font-weight: 500;
+    color: #374151;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #e5e7eb;
+    color: #4b5563;
+    vertical-align: top;
+}
+
+.table tr:last-child td {
+    border-bottom: none;
+}
+
+.nameCell {
+    min-width: 200px;
+}
+
+.name {
+    font-weight: 600;
+    color: #111827;
+}
+
+.namespace {
+    font-size: 0.75rem;
+    color: #6b7280;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+.codeFont {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 0.85em;
+    color: #0d9488;
+}
+
+.pkBadge {
+    display: inline-block;
+    padding: 0.1em 0.4em;
+    font-size: 0.7em;
+    font-weight: 700;
+    color: #ffffff;
+    background-color: #f59e0b;
+    border-radius: 0.25rem;
+    margin-top: 0.25rem;
+}

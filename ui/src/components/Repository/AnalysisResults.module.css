@@ -1,0 +1,214 @@
+.container {
+    margin-top: 2rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background-color: #fff;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+}
+
+.header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+    background-color: #f9fafb;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+}
+
+.tabs {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    /* For scrollbar if needed */
+}
+
+.tab {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #4b5563;
+    background-color: transparent;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.tab:hover {
+    color: #111827;
+    background-color: #e5e7eb;
+}
+
+.activeTab {
+    color: #2563eb;
+    background-color: #dbeafe;
+}
+
+.content {
+    padding: 1.5rem;
+}
+
+.loading {
+    padding: 2rem;
+    text-align: center;
+    color: #6b7280;
+}
+
+.error {
+    color: #dc2626;
+    background-color: #fee2e2;
+    padding: 1rem;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+}
+
+.empty {
+    text-align: center;
+    color: #6b7280;
+    font-style: italic;
+    padding: 2rem;
+}
+
+/* Config Tables */
+.tableContainer {
+    overflow-x: auto;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+    text-align: left;
+}
+
+.table th {
+    background-color: #f9fafb;
+    padding: 0.75rem 1rem;
+    font-weight: 500;
+    color: #374151;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #e5e7eb;
+    color: #4b5563;
+    vertical-align: top;
+}
+
+.codeFont {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.85em;
+    color: #111827;
+}
+
+.secretBadge {
+    display: inline-block;
+    background-color: #fee2e2;
+    color: #b91c1c;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 1px 4px;
+    border-radius: 4px;
+    margin-left: 0.5rem;
+    vertical-align: text-top;
+}
+
+.metaCell {
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+.lineNumber {
+    color: #9ca3af;
+}
+
+/* Quality Metrics */
+.metricsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.metricCard {
+    padding: 1.25rem;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+}
+
+.good {
+    border-left: 4px solid #10b981;
+    background-color: #ecfdf5;
+}
+
+.warning {
+    border-left: 4px solid #f59e0b;
+    background-color: #fffbeb;
+}
+
+.critical {
+    border-left: 4px solid #ef4444;
+    background-color: #fef2f2;
+}
+
+.metricTitle {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: #6b7280;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+}
+
+.metricName {
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 0.5rem;
+}
+
+.metricValue {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+}
+
+.unit {
+    font-size: 0.875rem;
+    color: #6b7280;
+    font-weight: 400;
+}
+
+.warningList {
+    margin-top: 2rem;
+}
+
+.warningItem {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    background-color: #fff7ed;
+    /* orange-50 */
+    border: 1px solid #ffedd5;
+    /* orange-100 */
+    border-radius: 6px;
+    color: #c2410c;
+    /* orange-700 */
+    font-size: 0.875rem;
+}
+
+.warningIcon {
+    margin-right: 0.75rem;
+    font-size: 1.25rem;
+}

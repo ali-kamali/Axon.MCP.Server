@@ -1,0 +1,80 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv/
+
+# IDE
+.vs/
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment
+.env
+.env.local
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+*.cover
+.hypothesis/
+
+# Logs
+*.log
+
+# Database
+*.db
+*.sqlite
+
+# Cache
+cache/
+.mypy_cache/
+.ruff_cache/
+
+# Frontend (Vite/React)
+ui/node_modules/
+ui/dist/
+ui/.vite/
+ui/.eslintcache
+ui/coverage/
+**/*.tsbuildinfo
+
+# .NET
+obj/
+bin/
+*.user
+*.suo
+*.cache
+**/obj/Debug/**/RoslynAnalyzer.assets.cache
+
+# OS
+.DS_Store
+Thumbs.db
+
+.archive/

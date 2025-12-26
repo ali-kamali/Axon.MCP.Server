@@ -1,0 +1,53 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'axon-mcp-server'
+    environment: 'development'
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'axon-api'
+    metrics_path: '/api/v1/metrics'
+    static_configs:
+      - targets: ['api:8080']
+        labels:
+          service: 'api'
+
+  - job_name: 'axon-mcp-server'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['mcp-server:9090']
+        labels:
+          service: 'mcp-server'
+
+  - job_name: 'axon-worker'
+    static_configs:
+      - targets: ['worker:9090']
+        labels:
+          service: 'worker'
+          worker_type: 'cpu-bound'
+
+  - job_name: 'axon-enrichment-worker'
+    static_configs:
+      - targets: ['enrichment-worker:9090']
+        labels:
+          service: 'enrichment-worker'
+          worker_type: 'io-bound'
+
+
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+        labels:
+          service: 'postgres'
+
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+        labels:
+          service: 'redis'
+

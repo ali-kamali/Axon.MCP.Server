@@ -1,0 +1,318 @@
+.repo_table_wrapper {
+  background: var(--color-surface);
+  padding: var(--space-6);
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+  position: relative;
+  /* Context for sticky actions */
+}
+
+.repo_table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  min-width: 1000px;
+  /* Reduced from 1200px */
+}
+
+.repo_table_header th {
+  text-align: left;
+  color: var(--color-muted);
+  padding-bottom: var(--space-2);
+  padding-right: var(--space-3);
+  white-space: nowrap;
+  font-size: 0.85rem;
+}
+
+/* Optimized Column Widths */
+.repo_table_header th:nth-child(1) {
+  width: 40px;
+}
+
+/* Checkbox */
+.repo_table_header th:nth-child(2) {
+  width: 40px;
+}
+
+/* ID */
+.repo_table_header th:nth-child(3) {
+  width: 90px;
+}
+
+/* Provider */
+.repo_table_header th:nth-child(4) {
+  width: 180px;
+}
+
+/* Name */
+.repo_table_header th:nth-child(5) {
+  width: 90px;
+}
+
+/* Language */
+.repo_table_header th:nth-child(6) {
+  width: 160px;
+}
+
+/* Path */
+.repo_table_header th:nth-child(7) {
+  width: 100px;
+}
+
+/* Status */
+.repo_table_header th:nth-child(8) {
+  width: 130px;
+}
+
+/* Last Sync */
+.repo_table_header th:nth-child(9) {
+  width: 160px;
+}
+
+/* Last Commit */
+.repo_table_header th:nth-child(10) {
+  width: 60px;
+}
+
+/* Files */
+.repo_table_header th:nth-child(11) {
+  width: 70px;
+}
+
+/* Symbols */
+.repo_table_header th:nth-child(12) {
+  width: 70px;
+}
+
+/* Size */
+.repo_table_header th:nth-child(13) {
+  width: 140px;
+  /* Fixed width for actions */
+  position: sticky;
+  right: 0;
+  background: var(--color-surface);
+  /* Match wrapper background */
+  z-index: 10;
+  box-shadow: -4px 0 12px rgba(0, 0, 0, 0.1);
+  /* Shadow to indicate scroll */
+}
+
+.repo_table_row td {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding: var(--space-3) var(--space-2) var(--space-3) 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.9rem;
+}
+
+.repo_table_row td:first-child {
+  padding-left: 0;
+}
+
+/* Sticky Actions Column Cell */
+.repo_table_row td:last-child {
+  position: sticky;
+  right: 0;
+  background: var(--color-surface);
+  /* Match wrapper background */
+  z-index: 10;
+  box-shadow: -4px 0 12px rgba(0, 0, 0, 0.1);
+  /* Shadow to indicate scroll */
+  overflow: visible;
+  /* Allow buttons to show tooltips if needed */
+}
+
+.repo_name {
+  font-weight: 600;
+  color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.repo_branch {
+  color: var(--color-muted);
+  font-size: 0.75rem;
+  margin-top: var(--space-1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.repo_path {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--color-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+.provider_badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.provider_gitlab {
+  background: rgba(252, 109, 38, 0.15);
+  color: #fc6d26;
+  border: 1px solid rgba(252, 109, 38, 0.3);
+}
+
+.provider_azuredevops {
+  background: rgba(0, 120, 212, 0.15);
+  color: #0078d4;
+  border: 1px solid rgba(0, 120, 212, 0.3);
+}
+
+.status_pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--space-2);
+  line-height: 1.6;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.status_pending {
+  background: rgba(255, 215, 0, 0.15);
+  color: #ffd700;
+}
+
+.status_cloning,
+.status_parsing,
+.status_extracting,
+.status_embedding {
+  background: rgba(47, 129, 247, 0.15);
+  color: #2f81f7;
+}
+
+.status_completed {
+  background: rgba(46, 160, 67, 0.2);
+  color: #2ea043;
+}
+
+.status_failed {
+  background: rgba(248, 81, 73, 0.15);
+  color: #f85149;
+}
+
+.checkbox_column {
+  width: 40px;
+  text-align: center;
+}
+
+.checkbox_column input[type="checkbox"] {
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+}
+
+.sync_button,
+.edit_button,
+.delete_button {
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 0.35rem 0.6rem;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.75rem;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.sync_button {
+  background: var(--color-accent);
+  color: #0b0f14;
+}
+
+.sync_button:hover:not(:disabled) {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+.sync_button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  filter: none;
+}
+
+.edit_button {
+  background: rgba(33, 150, 243, 0.15);
+  color: #2196f3;
+  border: 1px solid rgba(33, 150, 243, 0.3);
+}
+
+.edit_button:hover {
+  background: rgba(33, 150, 243, 0.25);
+  border-color: #2196f3;
+  transform: translateY(-1px);
+}
+
+.delete_button {
+  background: rgba(244, 67, 54, 0.15);
+  color: #f44336;
+  border: 1px solid rgba(244, 67, 54, 0.3);
+}
+
+.delete_button:hover {
+  background: rgba(244, 67, 54, 0.25);
+  border-color: #f44336;
+  transform: translateY(-1px);
+}
+
+.action_group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: nowrap;
+  /* Prevent wrapping in sticky column */
+}
+
+.view_link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem 0.6rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--color-text);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.view_link:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  transform: translateY(-1px);
+}
+
+.commit_message {
+  font-size: 0.85rem;
+  color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-bottom: var(--space-1);
+}
+
+.commit_meta {
+  font-size: 0.75rem;
+  color: var(--color-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

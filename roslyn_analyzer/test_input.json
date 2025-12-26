@@ -1,0 +1,5 @@
+{
+    "operation": "analyze",
+    "file_path": "test.cs",
+    "code": "using System;\n\nnamespace TestNamespace {\n    public class User {\n        public string Name { get; set; }\n    }\n    \n    public class Service : IDisposable {\n        private User _user;\n        \n        public void Process() {\n            _user = new User();\n            Console.WriteLine(_user.Name);\n        }\n        \n        public void Dispose() {\n            // cleanup\n        }\n    }\n}"
+}
