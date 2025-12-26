@@ -38,7 +38,7 @@ mcp[cli]==1.22.0
 # Authentication & Security
 pyjwt==2.10.1
 python-jose[cryptography]==3.3.0
-python-multipart==0.0.9
+python-multipart==0.0.18
 passlib[bcrypt]==1.7.4
 
 # Configuration
