@@ -99,6 +99,7 @@ class SourceControlProviderEnum(str, Enum):
 
     GITLAB = "GITLAB"
     AZUREDEVOPS = "AZUREDEVOPS"
+    GITHUB = "GITHUB"
 
 
 class MCPToolEnum(str, Enum):

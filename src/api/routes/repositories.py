@@ -14,6 +14,7 @@ from src.api.schemas.repositories import (
     RepositorySyncResponse,
     GitLabDiscoveryResponse,
     AzureDevOpsDiscoveryResponse,
+    GitHubDiscoveryResponse,
     BulkRepositoryAddRequest,
     BulkRepositoryAddResponse,
     BulkRepositoryRemoveRequest,
@@ -243,6 +244,31 @@ async def discover_azuredevops_repositories(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to discover Azure DevOps repositories: {str(exc)}",
+        ) from exc
+
+
+@router.get("/repositories/discover/github/{owner}", response_model=GitHubDiscoveryResponse)
+async def discover_github_repositories(
+    owner: str,
+    session: AsyncSession = Depends(get_db_session),
+) -> GitHubDiscoveryResponse:
+    """
+    Discover all repositories for a GitHub owner/organization and check which are already tracked.
+
+    Args:
+        owner: GitHub organization or user name
+
+    Returns:
+        List of all repositories with tracking status
+    """
+    service = RepositoryService(session)
+    try:
+        response = await service.discover_github_repositories(owner)
+        return response
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to discover GitHub repositories: {str(exc)}",
         ) from exc
 
 

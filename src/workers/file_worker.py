@@ -163,6 +163,11 @@ async def _parse_file_async(file_id: int):
                     return {"status": "error", "error": error_msg}
                 repo_manager = AzureDevOpsRepositoryManager()
                 repo_path = repo_manager.get_repository_path(repo.azuredevops_project_name, repo.name)
+            elif repo.provider == SourceControlProviderEnum.GITHUB:
+                # GitHub uses path_with_namespace (owner/repo -> owner_repo)
+                from src.github.repository_manager import GitHubRepositoryManager
+                repo_manager = GitHubRepositoryManager()
+                repo_path = repo_manager.cache_dir / repo.path_with_namespace.replace("/", "_")
             else:
                 # GitLab uses path_with_namespace
                 repo_manager = RepositoryManager()

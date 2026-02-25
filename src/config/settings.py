@@ -33,6 +33,11 @@ class Settings(BaseSettings):
     azuredevops_use_ntlm: bool = True  # Enable NTLM authentication for Azure DevOps
     azuredevops_ssl_verify: bool = False  # SSL verification for self-hosted instances
 
+    # GitHub
+    github_url: str = "https://api.github.com"
+    github_token: Optional[str] = None
+    github_webhook_secret: Optional[str] = None
+
     # Database
     database_url: str
     database_pool_size: int = 20

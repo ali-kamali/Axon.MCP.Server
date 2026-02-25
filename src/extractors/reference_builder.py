@@ -68,6 +68,8 @@ class ReferenceBuilder:
             # Construct repository path
             if repo.provider == SourceControlProviderEnum.AZUREDEVOPS:
                 repo_path = Path(get_settings().repo_cache_dir).resolve() / "azuredevops" / repo.azuredevops_project_name / repo.name
+            elif repo.provider == SourceControlProviderEnum.GITHUB:
+                repo_path = Path(get_settings().repo_cache_dir).resolve() / repo.path_with_namespace.replace('/', '_').replace('\\', '_')
             else:
                 repo_path = Path(get_settings().repo_cache_dir).resolve() / repo.path_with_namespace.replace('/', '_').replace('\\', '_')
             
