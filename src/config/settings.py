@@ -1,5 +1,6 @@
 from typing import Optional
 
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -21,7 +22,7 @@ class Settings(BaseSettings):
 
     # GitLab
     gitlab_url: str = "https://gitlab.com"
-    gitlab_token: str
+    gitlab_token: Optional[str] = None
     gitlab_group_id: Optional[str] = None
     gitlab_webhook_secret: Optional[str] = None
 
@@ -135,6 +136,16 @@ class Settings(BaseSettings):
     metrics_port: int = 9090
     tracing_enabled: bool = False
     tracing_endpoint: Optional[str] = None
+
+    @model_validator(mode="after")
+    def validate_source_control_provider(self) -> "Settings":
+        """Ensure at least one source control provider (GitLab or GitHub) is configured."""
+        if not self.gitlab_token and not self.github_token:
+            raise ValueError(
+                "At least one source control provider must be configured. "
+                "Set either GITLAB_TOKEN or GITHUB_TOKEN (or both)."
+            )
+        return self
 
 
 from functools import lru_cache
