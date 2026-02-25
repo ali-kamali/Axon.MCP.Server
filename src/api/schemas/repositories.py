@@ -33,6 +33,9 @@ class RepositoryBase(BaseModel):
     gitlab_project_id: Optional[int] = None
     azuredevops_project_name: Optional[str] = None
     azuredevops_repo_id: Optional[str] = None
+    github_owner: Optional[str] = None
+    github_repo_name: Optional[str] = None
+    github_repo_id: Optional[int] = None
 
 
 class RepositoryCreate(BaseModel):
@@ -44,11 +47,14 @@ class RepositoryCreate(BaseModel):
     url: str
     clone_url: str
     default_branch: str = "main"
-    
+
     # Provider-specific fields (optional)
     gitlab_project_id: Optional[int] = None
     azuredevops_project_name: Optional[str] = None
     azuredevops_repo_id: Optional[str] = None
+    github_owner: Optional[str] = None
+    github_repo_name: Optional[str] = None
+    github_repo_id: Optional[int] = None
 
 
 class RepositoryResponse(BaseModel):
@@ -90,7 +96,10 @@ class RepositoryResponse(BaseModel):
     gitlab_project_id: Optional[int] = None
     azuredevops_project_name: Optional[str] = None
     azuredevops_repo_id: Optional[str] = None
-    
+    github_owner: Optional[str] = None
+    github_repo_name: Optional[str] = None
+    github_repo_id: Optional[int] = None
+
     # Helpful URLs for related operations (computed)
     search_url: Optional[str] = None  # URL to search this repository
     sync_url: Optional[str] = None  # URL to trigger sync
@@ -163,6 +172,35 @@ class AzureDevOpsDiscoveryResponse(BaseModel):
     tracked_count: int
     untracked_count: int
     repositories: list[AzureDevOpsRepositoryDiscovery]
+
+
+class GitHubRepositoryDiscovery(BaseModel):
+    """GitHub repository from discovery with tracking status."""
+
+    github_repo_id: int
+    github_owner: str
+    github_repo_name: str
+    name: str
+    path_with_namespace: str
+    url: str
+    clone_url: str
+    default_branch: str
+    size: int
+    is_fork: bool
+    is_private: bool
+    description: Optional[str] = None
+    is_tracked: bool
+    tracked_repository_id: Optional[int] = None
+
+
+class GitHubDiscoveryResponse(BaseModel):
+    """Response for GitHub owner/org discovery."""
+
+    owner: str
+    total_repositories: int
+    tracked_count: int
+    untracked_count: int
+    repositories: list[GitHubRepositoryDiscovery]
 
 
 class BulkRepositoryAddRequest(BaseModel):

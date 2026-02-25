@@ -7,6 +7,7 @@ from src.config.enums import SourceControlProviderEnum, RepositoryStatusEnum
 from src.database.models import Repository, Commit
 from src.gitlab.repository_manager import RepositoryManager
 from src.azuredevops.repository_manager import AzureDevOpsRepositoryManager
+from src.github.repository_manager import GitHubRepositoryManager
 from src.utils.redis_logger import RedisLogPublisher
 from src.utils.logging_config import get_logger
 from ..step import PipelineStep
@@ -61,6 +62,14 @@ class CloneStep(PipelineStep):
                     repo.azuredevops_project_name,
                     repo.name,
                     repo.clone_url,
+                    repo.default_branch
+                )
+            elif repo.provider == SourceControlProviderEnum.GITHUB:
+                repo_manager = GitHubRepositoryManager()
+                repo_path = await asyncio.to_thread(
+                    repo_manager.clone_or_update,
+                    repo.url,
+                    repo.path_with_namespace,
                     repo.default_branch
                 )
             else:

@@ -7,6 +7,7 @@ from src.database.models import Repository
 from src.config.enums import RepositoryStatusEnum, SourceControlProviderEnum
 from src.gitlab.repository_manager import RepositoryManager
 from src.azuredevops.repository_manager import AzureDevOpsRepositoryManager
+from src.github.repository_manager import GitHubRepositoryManager
 from src.utils.file_exclusion import FileExclusionRules
 from src.utils.redis_logger import RedisLogPublisher
 from src.utils.logging_config import get_logger
@@ -35,6 +36,8 @@ class DiscoveryStep(PipelineStep):
             repo_manager = RepositoryManager()
         elif repo.provider == SourceControlProviderEnum.AZUREDEVOPS:
             repo_manager = AzureDevOpsRepositoryManager()
+        elif repo.provider == SourceControlProviderEnum.GITHUB:
+            repo_manager = GitHubRepositoryManager()
         else:
             raise ValueError(f"Unsupported provider: {repo.provider}")
 

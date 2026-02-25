@@ -55,6 +55,9 @@ async def list_repositories(limit: int = 20) -> List[TextContent]:
                         "gitlab_project_id": repo.gitlab_project_id,
                         "azuredevops_project_name": repo.azuredevops_project_name,
                         "azuredevops_repo_id": repo.azuredevops_repo_id,
+                        "github_owner": repo.github_owner,
+                        "github_repo_name": repo.github_repo_name,
+                        "github_repo_id": repo.github_repo_id,
                     }
                 )
 
@@ -252,6 +255,10 @@ async def get_file_content(
                 if not repo.azuredevops_project_name:
                     return [TextContent(type="text", text=f"Azure DevOps project name not set for repository {repository_id}")]
                 repo_path = repo_manager.get_repository_path(repo.azuredevops_project_name, repo.name)
+            elif repo.provider == SourceControlProviderEnum.GITHUB:
+                from src.github.repository_manager import GitHubRepositoryManager
+                repo_manager = GitHubRepositoryManager()
+                repo_path = repo_manager.cache_dir / repo.path_with_namespace.replace("/", "_")
             else:
                 return [TextContent(type="text", text=f"Unsupported provider: {repo.provider}")]
             
