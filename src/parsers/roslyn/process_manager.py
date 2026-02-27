@@ -1,10 +1,12 @@
 import asyncio
+from contextlib import suppress
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Optional, Dict, Any, Union
+from typing import Optional, Dict, Any
 import psutil
 import json
+import time
 from src.utils.logging_config import get_logger
 from src.utils.metrics import (
     roslyn_uptime_seconds,
@@ -50,12 +52,14 @@ class RoslynProcessManager:
         self._request_count = 0
         self._failure_count = 0
         self._last_request_at: Optional[datetime] = None
+        self._last_response_time = 0.0
         self._consecutive_failures = 0
         
         # Heartbeat
         self._heartbeat_task: Optional[asyncio.Task] = None
         self._heartbeat_interval = 30  # seconds
-        self._request_lock = asyncio.Lock() # Lock for atomic request/response
+        self._request_lock = asyncio.Lock()  # Lock for atomic request/response
+        self._restart_lock = asyncio.Lock()  # Prevent concurrent restarts
         
     async def start(self) -> bool:
         """Start the Roslyn analyzer process."""
@@ -83,9 +87,10 @@ class RoslynProcessManager:
                     stdout=asyncio.subprocess.PIPE,
                     stderr=asyncio.subprocess.PIPE,
                 )
-                self._started_at = datetime.utcnow()
+                self._started_at = datetime.now(UTC)
                 self._request_count = 0
                 self._failure_count = 0
+                self._last_response_time = 0.0
                 self._consecutive_failures = 0
                 
                 # Start heartbeat monitoring
@@ -127,6 +132,8 @@ class RoslynProcessManager:
                 if not self._process.stdin:
                      raise RuntimeError("Process stdin is None")
 
+                start_time = time.perf_counter()
+
                 self._process.stdin.write(payload.encode('utf-8'))
                 await self._process.stdin.drain()
                 
@@ -143,7 +150,8 @@ class RoslynProcessManager:
                 
                 self._request_count += 1
                 self._consecutive_failures = 0
-                self._last_request_at = datetime.utcnow()
+                self._last_request_at = datetime.now(UTC)
+                self._last_response_time = time.perf_counter() - start_time
                 
                 # Metrics
                 roslyn_requests_total.labels(operation=request.get("command", "unknown")).inc()
@@ -214,7 +222,10 @@ class RoslynProcessManager:
         """Stop the Roslyn process gracefully or forcefully."""
         async with self._process_lock:
             if self._heartbeat_task:
-                self._heartbeat_task.cancel()
+                heartbeat_task = self._heartbeat_task
+                heartbeat_task.cancel()
+                with suppress(asyncio.CancelledError):
+                    await heartbeat_task
                 self._heartbeat_task = None
             
             if self._process is None:
@@ -238,13 +249,13 @@ class RoslynProcessManager:
                     logger.warning("roslyn_graceful_shutdown_failed", error=str(e))
                     try:
                         self._process.kill()
-                    except: 
+                    except Exception:
                         pass
             else:
                 try:
                     self._process.kill()
                     logger.info("roslyn_process_killed", pid=pid)
-                except:
+                except Exception:
                     pass
             
             self._process = None
@@ -252,10 +263,13 @@ class RoslynProcessManager:
     
     async def restart(self):
         """Restart the process."""
-        logger.info("roslyn_process_restarting")
-        # Don't use graceful stop for restart if we suspect it's broken
-        await self.stop(graceful=False)
-        await self.start()
+        async with self._restart_lock:
+            logger.info("roslyn_process_restarting")
+            # Don't use graceful stop for restart if we suspect it's broken
+            await self.stop(graceful=False)
+            started = await self.start()
+            if not started:
+                logger.error("roslyn_process_restart_failed")
     
     async def get_health(self) -> ProcessHealth:
         """Get current process health metrics."""
@@ -265,18 +279,18 @@ class RoslynProcessManager:
                 uptime_seconds=0.0,
                 request_count=self._request_count,
                 failure_count=self._failure_count,
-                last_response_time=0.0,  # TODO: track
+                last_response_time=self._last_response_time,
                 memory_mb=0.0,
                 is_healthy=False
             )
         
-        uptime = (datetime.utcnow() - self._started_at).total_seconds() if self._started_at else 0.0
+        uptime = (datetime.now(UTC) - self._started_at).total_seconds() if self._started_at else 0.0
         
         try:
             proc = psutil.Process(self._process.pid)
             memory_info = proc.memory_info()
             memory_mb = memory_info.rss / 1024 / 1024
-        except:
+        except Exception:
             memory_mb = 0.0
         
         is_healthy = (
@@ -290,7 +304,7 @@ class RoslynProcessManager:
             uptime_seconds=uptime,
             request_count=self._request_count,
             failure_count=self._failure_count,
-            last_response_time=0.0,
+            last_response_time=self._last_response_time,
             memory_mb=memory_mb,
             is_healthy=is_healthy
         )

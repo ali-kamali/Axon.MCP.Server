@@ -5,7 +5,8 @@ This module provides utilities for validating and sanitizing data
 before database insertion to prevent truncation errors and data integrity issues.
 """
 
-from typing import Optional, Any
+from typing import Optional
+
 from src.utils.logging_config import get_logger
 
 logger = get_logger(__name__)
@@ -15,7 +16,7 @@ def truncate_string(
     value: Optional[str],
     max_length: int,
     field_name: str = "field",
-    log_truncation: bool = True
+    log_truncation: bool = True,
 ) -> Optional[str]:
     """
     Safely truncate a string to a maximum length.
@@ -31,7 +32,10 @@ def truncate_string(
     """
     if value is None:
         return None
-    
+
+    if max_length <= 0:
+        raise ValueError(f"max_length must be positive, got {max_length}")
+
     if len(value) <= max_length:
         return value
     
@@ -101,13 +105,24 @@ def validate_symbol_data(symbol_data: dict) -> tuple[bool, list[str]]:
             errors.append(f"Missing required field: {field}")
     
     # Validate line numbers
-    if 'start_line' in symbol_data and 'end_line' in symbol_data:
-        if symbol_data['start_line'] is not None and symbol_data['end_line'] is not None:
-            if symbol_data['start_line'] > symbol_data['end_line']:
-                errors.append(
-                    f"start_line ({symbol_data['start_line']}) cannot be greater than "
-                    f"end_line ({symbol_data['end_line']})"
-                )
+    start_line = symbol_data.get('start_line')
+    end_line = symbol_data.get('end_line')
+
+    if start_line is not None and not isinstance(start_line, int):
+        errors.append(f"start_line must be an integer, got {type(start_line).__name__}")
+    if end_line is not None and not isinstance(end_line, int):
+        errors.append(f"end_line must be an integer, got {type(end_line).__name__}")
+
+    if isinstance(start_line, int) and start_line < 1:
+        errors.append(f"start_line must be >= 1, got {start_line}")
+    if isinstance(end_line, int) and end_line < 1:
+        errors.append(f"end_line must be >= 1, got {end_line}")
+
+    if isinstance(start_line, int) and isinstance(end_line, int) and start_line > end_line:
+        errors.append(
+            f"start_line ({start_line}) cannot be greater than "
+            f"end_line ({end_line})"
+        )
     
     return len(errors) == 0, errors
 

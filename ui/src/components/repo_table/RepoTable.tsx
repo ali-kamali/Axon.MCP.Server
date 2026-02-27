@@ -45,7 +45,6 @@ export default function RepoTable({
   onToggleSelection,
   onToggleAll,
 }: RepoTableProps) {
-  const hasSelection = selectedIds.length > 0;
   const allSelected = rows.length > 0 && selectedIds.length === rows.length;
 
   return (

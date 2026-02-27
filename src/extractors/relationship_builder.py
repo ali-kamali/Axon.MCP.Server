@@ -4,6 +4,7 @@ from sqlalchemy import select
 from src.database.models import Symbol, Relation, File
 from src.config.enums import RelationTypeEnum, SymbolKindEnum
 from src.utils.logging_config import get_logger
+from src.utils.async_compat import maybe_await
 
 logger = get_logger(__name__)
 
@@ -100,7 +101,7 @@ class RelationshipBuilder:
                         to_symbol_id=target.id,
                         relation_type=RelationTypeEnum.INHERITS
                     )
-                    self.session.add(relation)
+                    await maybe_await(self.session.add(relation))
                     count += 1
             
             # Process interfaces
@@ -115,7 +116,7 @@ class RelationshipBuilder:
                         to_symbol_id=target.id,
                         relation_type=RelationTypeEnum.IMPLEMENTS
                     )
-                    self.session.add(relation)
+                    await maybe_await(self.session.add(relation))
                     count += 1
                     
         return count
@@ -157,7 +158,7 @@ class RelationshipBuilder:
                             to_symbol_id=base_method.id,
                             relation_type=RelationTypeEnum.OVERRIDES
                         )
-                        self.session.add(relation)
+                        await maybe_await(self.session.add(relation))
                         count += 1
                         
         return count
@@ -212,7 +213,7 @@ class RelationshipBuilder:
                                 'line': ref.get('line')
                             }
                         )
-                        self.session.add(relation)
+                        await maybe_await(self.session.add(relation))
                         count += 1
                         processed_targets.add(target.id)
             
@@ -267,7 +268,7 @@ class RelationshipBuilder:
                         to_symbol_id=target.id,
                         relation_type=RelationTypeEnum.REFERENCES
                     )
-                    self.session.add(relation)
+                    await maybe_await(self.session.add(relation))
                     count += 1
                     processed_targets.add(target.id)
                     
@@ -364,7 +365,7 @@ class RelationshipBuilder:
                                 to_symbol_id=target_sym.id,
                                 relation_type=RelationTypeEnum.IMPORTS
                             )
-                            self.session.add(relation)
+                            await maybe_await(self.session.add(relation))
                             relationships_created += 1
         
         await self.session.flush()

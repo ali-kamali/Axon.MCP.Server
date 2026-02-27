@@ -3,7 +3,7 @@
 from datetime import datetime
 from typing import List, Optional
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from src.config.enums import AccessModifierEnum, LanguageEnum, RelationTypeEnum, SymbolKindEnum
 
@@ -46,6 +46,6 @@ class SymbolResponse(BaseModel):
 class SymbolWithRelations(SymbolResponse):
     """Symbol response including relationship edges."""
 
-    relations: List[RelationEdge] = []
+    relations: List[RelationEdge] = Field(default_factory=list)
 
 

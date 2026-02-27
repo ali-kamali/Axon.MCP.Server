@@ -162,18 +162,27 @@ class SecurityValidator:
     def mask_sensitive_data(cls, data: str, visible_chars: int = 4) -> str:
         """
         Mask sensitive data for display.
-        
+
         Args:
             data: Data to mask
-            visible_chars: Number of characters to keep visible
-            
+            visible_chars: Number of characters to keep visible on each side
+
         Returns:
             Masked data (e.g., "sk_test_****7890")
         """
-        if len(data) <= visible_chars:
+        if not data:
+            return data
+
+        if visible_chars <= 0:
             return '*' * len(data)
-        
-        return data[:visible_chars] + '*' * (len(data) - visible_chars * 2) + data[-visible_chars:]
+
+        # If the value is too short to safely reveal both sides,
+        # mask it completely.
+        if len(data) <= visible_chars * 2:
+            return '*' * len(data)
+
+        masked_len = len(data) - (visible_chars * 2)
+        return data[:visible_chars] + ('*' * masked_len) + data[-visible_chars:]
     
     @classmethod
     def validate_symbol_name(cls, name: str) -> bool:

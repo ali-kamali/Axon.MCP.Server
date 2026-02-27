@@ -23,7 +23,7 @@ type BreakdownSummary = {
   items: BreakdownItem[];
 };
 
-const METRIC_LINE_REGEX = /^([a-zA-Z_:][a-zA-Z0-9_:]*)(\{([^}]*)\})?\s+([-+]?[0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?)/;
+const METRIC_LINE_REGEX = /^([a-zA-Z_:][a-zA-Z0-9_:]*)(\{([^}]*)\})?\s+([-+]?(?:[0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?|Inf|NaN))/;
 const LABEL_REGEX = /(\w+)="([^"]*)"/g;
 
 const compactNumberFormatter = Intl.NumberFormat("en-US", {
@@ -47,7 +47,14 @@ function parseMetrics(text: string | undefined): MetricSample[] {
       }
 
       const [, name, labelBlock] = match;
-      const value = Number.parseFloat(match[4]);
+      const rawValue = match[4];
+      const value =
+        rawValue === "Inf" || rawValue === "+Inf"
+          ? Number.POSITIVE_INFINITY
+          : rawValue === "-Inf"
+            ? Number.NEGATIVE_INFINITY
+            : Number.parseFloat(rawValue);
+
       if (Number.isNaN(value)) {
         return null;
       }

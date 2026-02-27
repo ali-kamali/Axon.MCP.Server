@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "lint": "eslint \"src/**/*.{ts,tsx}\"",
     "test": "vitest",
+    "test:ci": "vitest run",
     "typecheck": "tsc -b --noEmit"
   },
   "dependencies": {

@@ -18,6 +18,7 @@ from src.database.session import AsyncSessionLocal
 from src.database.models import Repository, File
 from src.config.enums import SourceControlProviderEnum
 from src.utils.logging_config import get_logger
+from src.utils.async_compat import maybe_await
 
 logger = get_logger(__name__)
 
@@ -79,7 +80,7 @@ async def create_or_update_file(
             line_count=line_count,
             content_hash=content_hash
         )
-        session.add(file_record)
+        await maybe_await(session.add(file_record))
         await session.flush()
     else:
         # Update existing file record

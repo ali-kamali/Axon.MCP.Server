@@ -90,7 +90,8 @@ class DatabaseConnectionPool:
             True if healthy, False otherwise
         """
         try:
-            async with self.get_session() as session:
+            session = await self.get_session()
+            async with session:
                 await session.execute(text("SELECT 1"))
             return True
         except Exception as e:

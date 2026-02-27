@@ -91,7 +91,6 @@ class TestCallResolver:
         pass
 
 
-@pytest.mark.asyncio
 class TestCallAnalyzer:
     """Test call extraction from AST."""
     

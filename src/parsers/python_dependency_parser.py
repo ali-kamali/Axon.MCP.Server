@@ -45,36 +45,77 @@ class PythonDependencyParser:
         
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
-                lines = f.readlines()
-            
+                raw_lines = f.readlines()
+
+            # Normalize line continuations used by pip-compile style hashes, e.g.:
+            # package==1.2.3 \
+            #   --hash=... \
+            #   --hash=...
+            lines: List[str] = []
+            current = ""
+            for raw_line in raw_lines:
+                stripped = raw_line.strip()
+                if not stripped:
+                    if current:
+                        lines.append(current)
+                        current = ""
+                    continue
+
+                if stripped.endswith("\\"):
+                    current += stripped[:-1].strip() + " "
+                    continue
+
+                current += stripped
+                lines.append(current)
+                current = ""
+
+            if current:
+                lines.append(current)
+
             for line in lines:
                 line = line.strip()
-                
+
                 # Skip comments and empty lines
                 if not line or line.startswith('#'):
                     continue
-                
+
                 # Skip -r, -c, -e flags (requirements file includes, constraints, editable)
                 if line.startswith(('-r ', '-c ', '-e ', '--')):
                     continue
-                
+
+                # Strip inline comments while preserving URL fragments and trim markers
+                if " #" in line:
+                    line = line.split(" #", 1)[0].strip()
+                if not line:
+                    continue
+
+                # Remove pip hash options when present on same logical requirement line
+                if " --hash=" in line:
+                    line = line.split(" --hash=", 1)[0].strip()
+                if not line:
+                    continue
+
                 # Parse package specification
                 # Pattern: package_name[extras]version_spec
                 match = re.match(r'^([a-zA-Z0-9_\-\.]+)(\[[^\]]+\])?(.*)', line)
                 if not match:
                     continue
-                
+
                 package_name = match.group(1)
-                extras = match.group(2) or ''
                 version_spec = match.group(3).strip()
-                
+
+                # Remove environment markers from version spec for stability
+                if ";" in version_spec:
+                    version_spec = version_spec.split(";", 1)[0].strip()
+
                 # Extract version if present
                 version = None
                 version_constraint = version_spec if version_spec else None
-                
+
                 # Try to extract exact version from ==
-                if '==' in version_spec:
-                    version = version_spec.split('==')[1].strip()
+                exact_match = re.search(r'==\s*([^,\s]+)', version_spec)
+                if exact_match:
+                    version = exact_match.group(1).strip()
                 
                 packages.append(PythonPackage(
                     package_name=package_name,

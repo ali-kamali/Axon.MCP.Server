@@ -1,6 +1,14 @@
+import os
+import sys
 from typing import Optional
 
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import model_validator
+from pydantic_settings import (
+    BaseSettings,
+    DotEnvSettingsSource,
+    PydanticBaseSettingsSource,
+    SettingsConfigDict,
+)
 
 
 class Settings(BaseSettings):
@@ -13,6 +21,42 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        settings_cls: type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> tuple[PydanticBaseSettingsSource, ...]:
+        """Skip dotenv loading during tests for deterministic secure defaults."""
+
+        class _ConditionalDotEnvSource(DotEnvSettingsSource):
+            def __call__(self) -> dict[str, object]:
+                is_pytest_process = "pytest" in sys.modules or any(
+                    part.endswith("pytest") for part in sys.argv
+                )
+                if is_pytest_process or os.getenv("PYTEST_CURRENT_TEST"):
+                    return {}
+
+                env_name = (
+                    os.getenv("environment")
+                    or os.getenv("ENVIRONMENT")
+                    or ""
+                ).strip().lower()
+                if env_name == "testing":
+                    return {}
+
+                return super().__call__()
+
+        return (
+            init_settings,
+            env_settings,
+            _ConditionalDotEnvSource(settings_cls),
+            file_secret_settings,
+        )
+
     # Application
     app_name: str = "Axon.MCP.Server"
     app_version: str = "1.0.0"
@@ -21,7 +65,7 @@ class Settings(BaseSettings):
 
     # GitLab
     gitlab_url: str = "https://gitlab.com"
-    gitlab_token: str
+    gitlab_token: str = ""
     gitlab_group_id: Optional[str] = None
     gitlab_webhook_secret: Optional[str] = None
 
@@ -31,7 +75,7 @@ class Settings(BaseSettings):
     azuredevops_password: Optional[str] = None  # Password or Personal Access Token (PAT)
     azuredevops_project: Optional[str] = None  # Optional: Only for test scripts, repositories store their own project names
     azuredevops_use_ntlm: bool = True  # Enable NTLM authentication for Azure DevOps
-    azuredevops_ssl_verify: bool = False  # SSL verification for self-hosted instances
+    azuredevops_ssl_verify: bool = True  # Keep TLS verification on by default; disable only for trusted self-signed environments
 
     # Database
     database_url: str
@@ -83,8 +127,8 @@ class Settings(BaseSettings):
     api_host: str = "0.0.0.0"
     api_port: int = 8080
     api_workers: int = 4
-    api_secret_key: str
-    api_cors_origins: list[str] = ["*"]
+    api_secret_key: str = ""
+    api_cors_origins: list[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
     api_rate_limit: int = 100
 
     # Security
@@ -92,9 +136,9 @@ class Settings(BaseSettings):
     admin_api_key: str = ""  # Main admin API key
     read_only_api_keys: list[str] = []  # List of read-only keys
     admin_password: str = ""  # Password for UI login (cookie-based)
-    mcp_auth_enabled: bool = False  # Disable MCP auth by default for compatibility
+    mcp_auth_enabled: bool = True  # Secure-by-default for MCP HTTP transport; override only for trusted local clients
 
-    jwt_secret_key: str
+    jwt_secret_key: str = ""
     jwt_algorithm: str = "HS256"
     jwt_access_token_expire_minutes: int = 30
     jwt_refresh_token_expire_days: int = 7
@@ -130,6 +174,48 @@ class Settings(BaseSettings):
     metrics_port: int = 9090
     tracing_enabled: bool = False
     tracing_endpoint: Optional[str] = None
+
+    @model_validator(mode="after")
+    def validate_required_secrets(self) -> "Settings":
+        """Require critical secrets outside explicit test environments."""
+        if self.environment.lower() == "testing":
+            # Keep tests deterministic and avoid leaking local developer secrets.
+            self.gitlab_token = ""
+            self.api_secret_key = ""
+            self.jwt_secret_key = ""
+            self.mcp_auth_enabled = True
+            self.azuredevops_ssl_verify = True
+            self.api_cors_origins = [
+                "http://localhost:3000",
+                "http://127.0.0.1:3000",
+            ]
+            return self
+
+        insecure_placeholders = {
+            "dummy",
+            "changeme",
+            "replace-me",
+            "test-token",
+            "api-secret",
+            "jwt-secret",
+        }
+
+        missing = [
+            name
+            for name, value in (
+                ("gitlab_token", self.gitlab_token),
+                ("api_secret_key", self.api_secret_key),
+                ("jwt_secret_key", self.jwt_secret_key),
+            )
+            if not str(value).strip() or str(value).strip().lower() in insecure_placeholders
+        ]
+        if missing:
+            missing_fields = ", ".join(missing)
+            raise ValueError(
+                f"Missing required settings for environment='{self.environment}': {missing_fields}"
+            )
+
+        return self
 
 
 from functools import lru_cache

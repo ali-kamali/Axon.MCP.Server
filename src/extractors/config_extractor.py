@@ -6,6 +6,7 @@ from pathlib import Path
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.database.models import ConfigurationEntry, File
 from src.utils.logging_config import get_logger
+from src.utils.async_compat import maybe_await
 
 logger = get_logger(__name__)
 
@@ -76,7 +77,7 @@ class ConfigExtractor:
                 entries = self.extract_configs(file, content)
                 
                 for entry in entries:
-                    self.session.add(entry)
+                    await maybe_await(self.session.add(entry))
                     entries_count += 1
                     
             except Exception as e:

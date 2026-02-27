@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
-from datetime import datetime
+from datetime import UTC, datetime
 
 from src.workers.pipeline.steps.clone_step import CloneStep
 from src.workers.pipeline.context import PipelineContext
@@ -48,7 +48,7 @@ async def test_clone_step_extracts_commit_info():
         mock_manager.clone_or_update.return_value = "/tmp/repo"
         
         # Mock commit info
-        now = datetime.utcnow()
+        now = datetime.now(UTC).replace(tzinfo=None)
         commit_info = {
             "sha": "test_sha_123",
             "message": "Initial commit",
@@ -125,7 +125,7 @@ async def test_clone_step_handles_existing_commit():
             "message": "Existing commit",
             "author_name": "User",
             "author_email": "user@email.com",
-            "committed_date": datetime.utcnow(),
+            "committed_date": datetime.now(UTC).replace(tzinfo=None),
             "parent_sha": None
         }
         mock_manager.get_head_commit.return_value = commit_info

@@ -73,7 +73,6 @@ class TestIncrementalSync:
         pass
 
 
-@pytest.mark.asyncio
 class TestGitDiffParsing:
     """Test git diff parsing logic."""
     

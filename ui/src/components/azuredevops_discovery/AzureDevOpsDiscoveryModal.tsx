@@ -18,7 +18,6 @@ interface AzureDevOpsDiscoveryModalProps {
 
 export default function AzureDevOpsDiscoveryModal({ isOpen, onClose, onSuccess }: AzureDevOpsDiscoveryModalProps) {
   const [projectName, setProjectName] = useState("");
-  const [loading, setLoading] = useState(false);
   const [discovering, setDiscovering] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -177,8 +176,23 @@ export default function AzureDevOpsDiscoveryModal({ isOpen, onClose, onSuccess }
   }).length;
 
   return (
-    <div className={styles.modal_overlay} onClick={onClose}>
-      <div className={styles.modal_content} onClick={(e) => e.stopPropagation()}>
+    <div
+      className={styles.modal_overlay}
+      role="button"
+      tabIndex={0}
+      aria-label="Close modal"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) {
+          onClose();
+        }
+      }}
+      onKeyDown={(event) => {
+        if (event.key === "Escape" || event.key === "Enter" || event.key === " ") {
+          onClose();
+        }
+      }}
+    >
+      <div className={styles.modal_content}>
         <div className={styles.modal_header}>
           <h2 className={styles.modal_title}>Discover Azure DevOps Repositories</h2>
           <button className={styles.close_button} onClick={onClose} type="button">

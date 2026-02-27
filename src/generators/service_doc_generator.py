@@ -3,7 +3,7 @@ import logging
 import os
 import re
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, UTC
 from typing import List, Optional, Dict, Any
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
@@ -91,7 +91,7 @@ class ServiceDocGenerator:
 {technical_section}
 
 ---
-*Documentation generated on {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC*
+*Documentation generated on {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')} UTC*
 """
         return markdown
 

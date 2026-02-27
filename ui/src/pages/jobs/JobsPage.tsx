@@ -97,11 +97,26 @@ function LogViewerModal({ repositoryId, onClose }: { repositoryId: number; onClo
     if (node) {
       node.scrollIntoView({ behavior: "smooth" });
     }
-  }, [logs]);
+  }, []);
 
   return (
-    <div className={styles.modal_overlay} onClick={onClose}>
-      <div className={styles.modal_content} onClick={(e) => e.stopPropagation()}>
+    <div
+      className={styles.modal_overlay}
+      role="button"
+      tabIndex={0}
+      aria-label="Close log viewer"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) {
+          onClose();
+        }
+      }}
+      onKeyDown={(event) => {
+        if (event.key === "Escape" || event.key === "Enter" || event.key === " ") {
+          onClose();
+        }
+      }}
+    >
+      <div className={styles.modal_content}>
         <div className={styles.modal_header}>
           <h3>Live Logs (Repository #{repositoryId})</h3>
           <div className={styles.connection_status}>

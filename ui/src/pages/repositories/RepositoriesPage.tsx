@@ -70,16 +70,12 @@ export default function RepositoriesPage() {
   const [deletingInProgress, setDeletingInProgress] = useState(false);
   const [toastMessage, setToastMessage] = useState<{ message: string; type: ToastTypeEnum } | null>(null);
 
-  useEffect(() => {
-    void fetchRepositories();
-  }, [currentPage]);
-
   const activeRepositoryCount = useMemo(
     () => repositories.filter((repo) => repo.status !== RepositoryStatusEnum.failed).length,
     [repositories]
   );
 
-  const fetchRepositories = async () => {
+  const fetchRepositories = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -92,7 +88,11 @@ export default function RepositoriesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage]);
+
+  useEffect(() => {
+    void fetchRepositories();
+  }, [fetchRepositories]);
 
   const handleSyncClick = async (row: RepositoryResponse) => {
     try {

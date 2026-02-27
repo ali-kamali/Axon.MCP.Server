@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, Mock, patch
 from datetime import datetime
 
 from src.vector_store.pgvector_store import PgVectorStore
@@ -11,7 +11,16 @@ from src.config.enums import SymbolKindEnum, LanguageEnum
 @pytest.fixture
 def mock_session():
     """Mock database session."""
-    return AsyncMock()
+    session = AsyncMock()
+    # AsyncSession APIs used by PgVectorStore
+    session.execute = AsyncMock()
+    session.flush = AsyncMock()
+
+    # Synchronous AsyncSession methods should be plain Mocks,
+    # otherwise AsyncMock emits "coroutine was never awaited" warnings.
+    session.add = Mock()
+    session.add_all = Mock()
+    return session
 
 
 @pytest.fixture

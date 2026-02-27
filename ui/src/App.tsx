@@ -1,15 +1,17 @@
+import { lazy, Suspense } from "react";
 import { NavLink, Route, Routes } from "react-router-dom";
 
-import DashboardPage from "./pages/dashboard/DashboardPage";
-import FileBrowserPage from "./pages/file_browser/FileBrowserPage";
-import JobsPage from "./pages/jobs/JobsPage";
-import RepositoryDetailPage from "./pages/repository_detail/RepositoryDetailPage";
-import RepositoriesPage from "./pages/repositories/RepositoriesPage";
-import SearchPage from "./pages/search/SearchPage";
-import SettingsPage from "./pages/settings/SettingsPage";
-import MCPTestPage from "./pages/mcp_test/MCPTestPage";
-import LoginPage from "./pages/login/LoginPage";
 import styles from "./App.module.css";
+
+const DashboardPage = lazy(() => import("./pages/dashboard/DashboardPage"));
+const FileBrowserPage = lazy(() => import("./pages/file_browser/FileBrowserPage"));
+const JobsPage = lazy(() => import("./pages/jobs/JobsPage"));
+const RepositoryDetailPage = lazy(() => import("./pages/repository_detail/RepositoryDetailPage"));
+const RepositoriesPage = lazy(() => import("./pages/repositories/RepositoriesPage"));
+const SearchPage = lazy(() => import("./pages/search/SearchPage"));
+const SettingsPage = lazy(() => import("./pages/settings/SettingsPage"));
+const MCPTestPage = lazy(() => import("./pages/mcp_test/MCPTestPage"));
+const LoginPage = lazy(() => import("./pages/login/LoginPage"));
 
 export default function App() {
   return (
@@ -80,17 +82,19 @@ export default function App() {
         </ul>
       </nav>
       <main className={styles.main_content}>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/" element={<DashboardPage />} />
-          <Route path="/repositories" element={<RepositoriesPage />} />
-          <Route path="/repositories/:repositoryId" element={<RepositoryDetailPage />} />
-          <Route path="/repositories/:repositoryId/files" element={<FileBrowserPage />} />
-          <Route path="/search" element={<SearchPage />} />
-          <Route path="/mcp-test" element={<MCPTestPage />} />
-          <Route path="/jobs" element={<JobsPage />} />
-          <Route path="/settings" element={<SettingsPage />} />
-        </Routes>
+        <Suspense fallback={<div role="status">Loading page…</div>}>
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/" element={<DashboardPage />} />
+            <Route path="/repositories" element={<RepositoriesPage />} />
+            <Route path="/repositories/:repositoryId" element={<RepositoryDetailPage />} />
+            <Route path="/repositories/:repositoryId/files" element={<FileBrowserPage />} />
+            <Route path="/search" element={<SearchPage />} />
+            <Route path="/mcp-test" element={<MCPTestPage />} />
+            <Route path="/jobs" element={<JobsPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
+          </Routes>
+        </Suspense>
       </main>
     </div>
   );

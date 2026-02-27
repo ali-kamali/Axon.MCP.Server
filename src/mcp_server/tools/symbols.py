@@ -1,5 +1,5 @@
 import time
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Iterable
 from sqlalchemy import select, and_
 
 from mcp.types import TextContent
@@ -14,6 +14,40 @@ from src.services.link_service import get_connected_endpoints_for_symbol
 from src.mcp_server.formatters.symbols import format_symbol_context
 
 logger = get_logger(__name__)
+
+
+def _is_api_controller_symbol(symbol: Symbol) -> bool:
+    """Safely detect controller-like symbols without assuming attribute shape."""
+    if symbol.name.endswith("Controller"):
+        return True
+
+    attributes = getattr(symbol, "attributes", None)
+    if not isinstance(attributes, list):
+        return False
+
+    for attr in attributes:
+        if isinstance(attr, dict) and attr.get("name") == "ApiController":
+            return True
+    return False
+
+
+def _parse_relation_types(values: Optional[Iterable[str]]) -> List[RelationTypeEnum]:
+    """Parse relationship type strings in a case-insensitive way."""
+    if not values:
+        return []
+
+    parsed: List[RelationTypeEnum] = []
+    for value in values:
+        if not value:
+            continue
+        normalized = value.strip().upper()
+        try:
+            parsed.append(RelationTypeEnum[normalized])
+        except KeyError:
+            logger.warning(f"Invalid relation type: {value}, skipping")
+
+    # preserve order while removing duplicates
+    return list(dict.fromkeys(parsed))
 
 async def get_symbol_context(
     symbol_id: int,
@@ -65,14 +99,7 @@ async def get_symbol_context(
                 traversal_direction = TraversalDirection.DOWNSTREAM
             
             # Convert relation_types strings to enums
-            relation_type_enums = None
-            if relation_types:
-                relation_type_enums = []
-                for rel_type_str in relation_types:
-                    try:
-                        relation_type_enums.append(RelationTypeEnum[rel_type_str])
-                    except KeyError:
-                        logger.warning(f"Invalid relation type: {rel_type_str}, skipping")
+            relation_type_enums = _parse_relation_types(relation_types)
             
             # If depth > 0, use the new call graph traversal
             if depth > 0:
@@ -310,15 +337,9 @@ async def find_usages(
 
             # Apply relationship type filter
             if relationship_types:
-                valid_enums = []
-                for rt in relationship_types:
-                    try:
-                        valid_enums.append(RelationTypeEnum[rt])
-                    except KeyError:
-                        logger.warning(f"Invalid relationship type in filter: {rt}")
-                
+                valid_enums = _parse_relation_types(relationship_types)
                 if valid_enums:
-                     query = query.where(Relation.relation_type.in_(valid_enums))
+                    query = query.where(Relation.relation_type.in_(valid_enums))
 
             query = query.limit(limit)
 
@@ -331,12 +352,8 @@ async def find_usages(
                 suggestions = []
                 
                 # Check for Controller
-                # Check attributes dict for 'ApiController' or ensure safe access
-                is_controller = symbol.name.endswith("Controller")
-                if not is_controller and symbol.attributes and isinstance(symbol.attributes, list):
-                     # Attributes is list of dicts [{'name': 'ApiController', ...}]
-                     is_controller = any(attr.get('name') == 'ApiController' for attr in symbol.attributes)
-                
+                is_controller = _is_api_controller_symbol(symbol)
+
                 if symbol.kind == SymbolKindEnum.CLASS and is_controller:
                     suggestions.append(f"💡 This looks like an API Controller. Try `find_api_endpoints` to see exposed routes.")
                 
@@ -535,14 +552,11 @@ async def find_references(
                         valid_types.append(RelationTypeEnum(reference_type.lower()))
                     except ValueError:
                         pass
-                for rt in relationship_types:
-                    try:
-                        valid_types.append(RelationTypeEnum[rt])
-                    except KeyError:
-                        logger.warning(f"Invalid relation type: {rt}")
-                
+
+                valid_types.extend(_parse_relation_types(relationship_types))
                 if valid_types:
-                    filters.append(Relation.relation_type.in_(valid_types))
+                    # preserve order while removing duplicates
+                    filters.append(Relation.relation_type.in_(list(dict.fromkeys(valid_types))))
 
             # Find all references
             result = await session.execute(
@@ -559,10 +573,7 @@ async def find_references(
                 suggestions = []
                 
                 # Check for Controller
-                # Use robust attribute checking
-                is_controller = symbol.name.endswith("Controller")
-                if not is_controller and symbol.attributes and isinstance(symbol.attributes, list):
-                     is_controller = any(attr.get('name') == 'ApiController' for attr in symbol.attributes)
+                is_controller = _is_api_controller_symbol(symbol)
 
                 if symbol.kind == SymbolKindEnum.CLASS and is_controller:
                    suggestions.append(f"💡 This looks like an API Controller. Try to find who calls the API using `find_api_endpoints`.")

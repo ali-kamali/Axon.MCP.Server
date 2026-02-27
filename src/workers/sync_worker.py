@@ -3,7 +3,7 @@ Celery tasks for repository synchronization.
 """
 
 from celery import shared_task
-from datetime import datetime
+from datetime import datetime, UTC
 import asyncio
 import traceback
 
@@ -195,7 +195,7 @@ async def _sync_repository_async(task, repository_id: int):
                             job_type="sync_repository",
                             status=JobStatusEnum.RUNNING,
                             celery_task_id=task.request.id,
-                            started_at=datetime.utcnow()
+                            started_at=datetime.now(UTC)
                         )
                         session.add(job)
                     else:
@@ -206,7 +206,7 @@ async def _sync_repository_async(task, repository_id: int):
                         is_manual_retry = (job.status == JobStatusEnum.PENDING)
                     
                         job.status = JobStatusEnum.RUNNING
-                        job.started_at = datetime.utcnow()
+                        job.started_at = datetime.now(UTC)
                         job.completed_at = None  # Clear old completion time
                         job.duration_seconds = None  # Clear old duration
                         job.error_message = None
@@ -447,7 +447,7 @@ async def _sync_repository_async(task, repository_id: int):
                     # CRITICAL: Re-fetch repo object because it was detached by session.expunge_all()
                     repo = await session.get(Repository, repository_id)
                     repo.status = RepositoryStatusEnum.COMPLETED
-                    repo.last_synced_at = datetime.utcnow()
+                    repo.last_synced_at = datetime.now(UTC)
                     repo.total_symbols = await _count_symbols(session, repository_id)
                  
                     # CRITICAL: Re-fetch job object because it was detached by session.expunge_all()
@@ -456,7 +456,7 @@ async def _sync_repository_async(task, repository_id: int):
                     job = job_result.scalar_one()
                     
                     job.status = JobStatusEnum.COMPLETED
-                    job.completed_at = datetime.utcnow()
+                    job.completed_at = datetime.now(UTC)
                     job.duration_seconds = int(
                         (job.completed_at - job_started_at_ts).total_seconds()
                     )
@@ -562,7 +562,7 @@ async def _sync_repository_async(task, repository_id: int):
                 
                     if job:
                         job.status = JobStatusEnum.FAILED
-                        job.completed_at = datetime.utcnow()
+                        job.completed_at = datetime.now(UTC)
                         job.error_message = error_msg
                         job.error_traceback = traceback.format_exc()
                     

@@ -7,9 +7,6 @@ from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.dependencies import get_db_session
-from src.mcp_server.tools.repository import list_repositories
-from src.mcp_server.tools.search import search_code
-from src.mcp_server.tools.symbols import get_symbol_context
 from src.utils.logging_config import get_logger
 from src.api.auth import get_current_user
 
@@ -63,6 +60,8 @@ async def test_search_code(
         logger.info("mcp_test_search_code", query=request.query)
         
         # Call the MCP tool function directly
+        from src.mcp_server.tools.search import search_code
+
         result = await search_code(
             query=request.query,
             limit=request.limit,
@@ -100,6 +99,8 @@ async def test_get_symbol_context(
         logger.info("mcp_test_get_symbol_context", symbol_id=request.symbol_id)
         
         # Call the MCP tool function directly
+        from src.mcp_server.tools.symbols import get_symbol_context
+
         result = await get_symbol_context(
             symbol_id=request.symbol_id,
             include_relationships=request.include_relationships,
@@ -134,6 +135,8 @@ async def test_list_repositories(
         logger.info("mcp_test_list_repositories", limit=request.limit)
         
         # Call the MCP tool function directly
+        from src.mcp_server.tools.repository import list_repositories
+
         result = await list_repositories(limit=request.limit)
         
         # Convert TextContent list to response format

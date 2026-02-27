@@ -7,11 +7,11 @@ from fastapi import APIRouter, HTTPException, Request, Depends
 from fastapi.responses import Response, StreamingResponse
 
 from src.config.settings import get_settings
-from src.mcp_server.server import mcp
 from src.utils.logging_config import get_logger
 from src.api.auth import get_current_user_mcp
 
 logger = get_logger(__name__)
+settings = get_settings()
 
 router = APIRouter(dependencies=[Depends(get_current_user_mcp)])
 
@@ -35,7 +35,7 @@ async def _handle_mcp_request(request_data: Dict[str, Any]) -> Dict[str, Any]:
                     },
                     "serverInfo": {
                         "name": "axon-mcp-server",
-                        "version": get_settings().app_version,
+                        "version": settings.app_version,
                     },
                 },
             }

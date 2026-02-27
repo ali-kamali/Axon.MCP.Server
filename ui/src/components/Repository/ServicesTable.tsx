@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { ServiceAnalysis } from '../../services/api';
 import styles from './ServicesTable.module.css';
 

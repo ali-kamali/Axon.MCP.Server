@@ -16,6 +16,8 @@ def mock_redis():
     redis_client.ping.return_value = True
     redis_client.set.return_value = True
     redis_client.delete.return_value = 1
+    redis_client.eval.return_value = 1
+    redis_client.get.return_value = "token"
     redis_client.exists.return_value = 0
     redis_client.ttl.return_value = 300
     redis_client.expire.return_value = True
@@ -48,8 +50,8 @@ def test_acquire_lock_success(mock_redis):
             assert acquired is True
             assert mock_redis.set.called
         
-        # Verify lock was released
-        assert mock_redis.delete.called
+        # Verify lock was released via compare-and-delete script
+        assert mock_redis.eval.called
 
 
 def test_acquire_lock_already_locked(mock_redis):
@@ -101,27 +103,37 @@ def test_is_locked_not_locked(mock_redis):
 def test_extend_lock_success(mock_redis):
     """Test extending lock expiration."""
     mock_redis.ttl.return_value = 100  # 100 seconds remaining
-    
+
     with patch('src.workers.distributed_lock.redis.from_url', return_value=mock_redis):
         lock = DistributedLock()
-        
-        result = lock.extend_lock("test-resource", 200)
-        
-        assert result is True
-        assert mock_redis.ttl.called
-        assert mock_redis.expire.called
+
+        with lock.acquire("test-resource", timeout=300) as acquired:
+            assert acquired is True
+            token = mock_redis.set.call_args[0][1]
+            mock_redis.get.return_value = token
+
+            result = lock.extend_lock("test-resource", 200)
+
+            assert result is True
+            assert mock_redis.ttl.called
+            assert mock_redis.expire.called
 
 
 def test_extend_lock_not_found(mock_redis):
     """Test extending non-existent lock."""
     mock_redis.ttl.return_value = -2  # Key does not exist
-    
+
     with patch('src.workers.distributed_lock.redis.from_url', return_value=mock_redis):
         lock = DistributedLock()
-        
-        result = lock.extend_lock("test-resource", 200)
-        
-        assert result is False
+
+        with lock.acquire("test-resource", timeout=300) as acquired:
+            assert acquired is True
+            token = mock_redis.set.call_args[0][1]
+            mock_redis.get.return_value = token
+
+            result = lock.extend_lock("test-resource", 200)
+
+            assert result is False
 
 
 def test_get_distributed_lock_singleton():
@@ -135,7 +147,7 @@ def test_get_distributed_lock_singleton():
 
 def test_lock_release_error_handling(mock_redis):
     """Test lock release with error."""
-    mock_redis.delete.side_effect = Exception("Delete failed")
+    mock_redis.eval.side_effect = Exception("Delete failed")
     
     with patch('src.workers.distributed_lock.redis.from_url', return_value=mock_redis):
         lock = DistributedLock()
@@ -163,11 +175,26 @@ def test_lock_with_custom_timeout(mock_redis):
     """Test lock with custom timeout."""
     with patch('src.workers.distributed_lock.redis.from_url', return_value=mock_redis):
         lock = DistributedLock()
-        
+
         with lock.acquire("test-resource", timeout=600) as acquired:
             assert acquired is True
-            
+
             # Verify timeout parameter was passed
             call_args = mock_redis.set.call_args
             assert call_args[1]['ex'] == 600
+
+
+def test_release_uses_owner_token(mock_redis):
+    """Test lock release is token-checked and uses owner token."""
+    with patch('src.workers.distributed_lock.redis.from_url', return_value=mock_redis):
+        lock = DistributedLock()
+
+        with lock.acquire("test-resource", timeout=300) as acquired:
+            assert acquired is True
+            expected_token = mock_redis.set.call_args[0][1]
+
+        eval_args = mock_redis.eval.call_args[0]
+        assert eval_args[1] == 1
+        assert eval_args[2] == "lock:test-resource"
+        assert eval_args[3] == expected_token
 

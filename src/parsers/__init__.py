@@ -9,6 +9,7 @@ from src.parsers.hybrid_parser import HybridCSharpParser
 from src.parsers.javascript_parser import JavaScriptParser, TypeScriptParser
 from src.parsers.vue_parser import VueParser
 from src.parsers.markdown_parser import MarkdownParser
+from src.parsers.python_parser import PythonParser
 from src.parsers.csproj_parser import CsProjParser
 from src.parsers.solution_parser import SolutionParser
 from src.parsers.package_json_parser import PackageJsonParser
@@ -67,6 +68,8 @@ class ParserFactory:
             return TypeScriptParser(use_tsx=True)
         elif suffix == '.vue':
             return cls.get_parser(LanguageEnum.VUE)
+        elif suffix == '.py':
+            return cls.get_parser(LanguageEnum.PYTHON)
         elif suffix in ['.md', '.markdown']:
             return cls.get_parser(LanguageEnum.MARKDOWN)
         elif suffix in ['.sql', '.ddl']:
@@ -100,6 +103,7 @@ class ParserFactory:
             LanguageEnum.JAVASCRIPT: JavaScriptParser,
             LanguageEnum.TYPESCRIPT: TypeScriptParser,
             LanguageEnum.VUE: VueParser,
+            LanguageEnum.PYTHON: PythonParser,
             LanguageEnum.MARKDOWN: MarkdownParser,
             LanguageEnum.SQL: SQLParser,
         }
@@ -169,6 +173,7 @@ __all__ = [
     'JavaScriptParser',
     'TypeScriptParser',
     'VueParser',
+    'PythonParser',
     'ParserFactory',
     'parse_file',
     'parse_file_async',

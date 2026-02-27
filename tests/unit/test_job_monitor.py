@@ -6,7 +6,7 @@ Tests the JobMonitor class for managing and monitoring background jobs.
 
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from src.workers.job_monitor import JobMonitor
 from src.database.models import Job, Repository
 from src.config.enums import JobStatusEnum, RepositoryStatusEnum
@@ -31,7 +31,7 @@ def mock_running_job():
     job.job_type = "sync_repository"
     job.status = JobStatusEnum.RUNNING
     job.celery_task_id = "test-task-123"
-    job.started_at = datetime.utcnow() - timedelta(minutes=30)
+    job.started_at = datetime.now(UTC).replace(tzinfo=None) - timedelta(minutes=30)
     job.max_retries = 3
     job.retry_count = 0
     job.job_metadata = {"file_id": 123}
@@ -47,8 +47,8 @@ def mock_failed_job():
     job.job_type = "sync_repository"
     job.status = JobStatusEnum.FAILED
     job.celery_task_id = "test-task-456"
-    job.started_at = datetime.utcnow() - timedelta(hours=1)
-    job.completed_at = datetime.utcnow()
+    job.started_at = datetime.now(UTC).replace(tzinfo=None) - timedelta(hours=1)
+    job.completed_at = datetime.now(UTC).replace(tzinfo=None)
     job.max_retries = 3
     job.retry_count = 0
     return job
@@ -109,7 +109,7 @@ async def test_get_failed_jobs(mock_session, mock_failed_job):
 async def test_get_stuck_jobs(mock_session, mock_running_job):
     """Test detecting stuck jobs."""
     # Set job start time to 2 hours ago (should be stuck)
-    mock_running_job.started_at = datetime.utcnow() - timedelta(hours=2)
+    mock_running_job.started_at = datetime.now(UTC).replace(tzinfo=None) - timedelta(hours=2)
     
     scalars_mock = MagicMock()
     scalars_mock.all.return_value = [mock_running_job]

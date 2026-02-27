@@ -8,12 +8,17 @@ detect stuck jobs, and retry failed jobs.
 from typing import List, Dict, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from src.database.models import Job, Repository
 from src.config.enums import JobStatusEnum, RepositoryStatusEnum
 from src.utils.logging_config import get_logger
 
 logger = get_logger(__name__)
+
+
+def utcnow_naive() -> datetime:
+    """Return a UTC timestamp compatible with naive DB DateTime columns."""
+    return datetime.now(UTC).replace(tzinfo=None)
 
 
 class JobMonitor:
@@ -91,7 +96,7 @@ class JobMonitor:
         Returns:
             List of stuck Job objects
         """
-        cutoff = datetime.utcnow() - timedelta(minutes=timeout_minutes)
+        cutoff = utcnow_naive() - timedelta(minutes=timeout_minutes)
         
         result = await self.session.execute(
             select(Job).where(
@@ -130,7 +135,7 @@ class JobMonitor:
             return False
         
         job.status = JobStatusEnum.FAILED
-        job.completed_at = datetime.utcnow()
+        job.completed_at = utcnow_naive()
         job.error_message = "Job exceeded maximum execution time and was marked as stuck"
         
         if job.started_at:
@@ -370,7 +375,7 @@ class JobMonitor:
         
         # Update job status
         job.status = JobStatusEnum.CANCELLED
-        job.completed_at = datetime.utcnow()
+        job.completed_at = utcnow_naive()
         job.error_message = reason
         
         if job.started_at:
@@ -432,7 +437,7 @@ class JobMonitor:
         Returns:
             Number of jobs deleted
         """
-        cutoff = datetime.utcnow() - timedelta(days=days)
+        cutoff = utcnow_naive() - timedelta(days=days)
         
         result = await self.session.execute(
             select(Job).where(
@@ -489,7 +494,7 @@ class JobMonitor:
             
             # Mark job as failed
             job.status = JobStatusEnum.FAILED
-            job.completed_at = datetime.utcnow()
+            job.completed_at = utcnow_naive()
             job.error_message = "Job interrupted by system restart"
             
             if job.started_at:

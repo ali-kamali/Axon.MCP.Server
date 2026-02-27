@@ -57,17 +57,12 @@ export default function SearchPage() {
     }));
   }, [searchParams]);
 
-  const [repositoriesLoading, setRepositoriesLoading] = useState(false);
-
   const loadRepositories = async () => {
     try {
-      setRepositoriesLoading(true);
       const data = await listRepositories({ limit: 100 });
       setRepositories(data.items);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load repositories");
-    } finally {
-      setRepositoriesLoading(false);
     }
   };
 

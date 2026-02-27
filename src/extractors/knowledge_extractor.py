@@ -6,6 +6,7 @@ from src.database.models import Symbol, Relation, File, Chunk, Dependency, Solut
 from src.parsers.base_parser import ParseResult, ParsedSymbol
 from src.config.enums import SymbolKindEnum, RelationTypeEnum, LanguageEnum
 from src.utils.logging_config import get_logger
+from src.utils.async_compat import maybe_await
 from src.utils.data_validation import truncate_string
 from src.embeddings.symbol_chunker import SymbolChunker, ChunkConfig
 from src.embeddings.chunk_context import ChunkContextBuilder
@@ -154,7 +155,7 @@ class KnowledgeExtractor:
                     if parsed_symbol.parent_name and parsed_symbol.parent_name in symbol_map:
                         symbol.parent_symbol_id = symbol_map[parsed_symbol.parent_name]
 
-                    self.session.add(symbol)
+                    await maybe_await(self.session.add(symbol))
                     await self.session.flush()  # Get ID
                     
                     symbol_map[parsed_symbol.fully_qualified_name or parsed_symbol.name] = symbol.id
@@ -164,7 +165,7 @@ class KnowledgeExtractor:
                     # Create chunks for symbol using new symbol-based chunker
                     chunks = await self._create_chunks_for_symbol(symbol, parsed_symbol, file_id)
                     for chunk in chunks:
-                        self.session.add(chunk)
+                        await maybe_await(self.session.add(chunk))
                         chunks_created += 1
                     
                     # Flush chunks immediately to ensure FK constraint validation happens now
@@ -213,7 +214,7 @@ class KnowledgeExtractor:
             # Build and persist parent-child relationships (CONTAINS relations)
             relations = await self._build_relationships(parse_result, symbol_map, file_id)
             for relation in relations:
-                self.session.add(relation)
+                await maybe_await(self.session.add(relation))
                 relations_created += 1
             
             # Process nested lambdas (Phase 3.1)
@@ -270,7 +271,7 @@ class KnowledgeExtractor:
 
                     l_symbol.parent_symbol_id = parent_symbol.id # Ensure link
                     
-                    self.session.add(l_symbol)
+                    await maybe_await(self.session.add(l_symbol))
                     await self.session.flush()
                     
                     symbol_map[lambda_parsed.fully_qualified_name] = l_symbol.id
@@ -280,7 +281,7 @@ class KnowledgeExtractor:
                     # Create chunks for lambda
                     chunks = await self._create_chunks_for_symbol(l_symbol, lambda_parsed, file_id)
                     for chunk in chunks:
-                        self.session.add(chunk)
+                        await maybe_await(self.session.add(chunk))
                         chunks_created += 1
                     
                     # Flush chunks immediately to ensure FK constraint validation happens now
@@ -467,8 +468,11 @@ class KnowledgeExtractor:
             context = await self.context_builder.build_context(symbol, file)
             
             # Create chunks using SymbolChunker
-            chunk_dicts = self.chunker.create_chunks_for_symbol(
-                symbol, file, context, file_content=None  # Could load file content here
+            # Some tests use async test doubles for this method; support both sync and async implementations.
+            chunk_dicts = await maybe_await(
+                self.chunker.create_chunks_for_symbol(
+                    symbol, file, context, file_content=None  # Could load file content here
+                )
             )
             
             # Convert chunk dicts to Chunk models
@@ -886,7 +890,7 @@ class KnowledgeExtractor:
                     reference_type='project'
                 )
                 
-                self.session.add(project_ref)
+                await maybe_await(self.session.add(project_ref))
                 project_references_created += 1
                 
                 logger.debug(
@@ -940,7 +944,7 @@ class KnowledgeExtractor:
                     visual_studio_full_version=docs.get('visual_studio_full_version'),
                     minimum_visual_studio_version=docs.get('minimum_visual_studio_version')
                 )
-                self.session.add(solution)
+                await maybe_await(self.session.add(solution))
                 await self.session.flush()  # Get ID
                 solutions_created += 1
                 
@@ -984,7 +988,7 @@ class KnowledgeExtractor:
                             existing_project.project_type = truncate_string(p_docs.get('project_type'), 100, "project.project_type")
                             existing_project.project_type_guid = truncate_string(project_type_guid, 36, "project.project_type_guid")
                             existing_project.file_path = truncate_string(normalized_project_path, 1000, "project.file_path")
-                            self.session.add(existing_project)
+                            await maybe_await(self.session.add(existing_project))
                             logger.info(
                                 "project_updated_with_solution_metadata",
                                 project_id=existing_project.id,
@@ -1002,7 +1006,7 @@ class KnowledgeExtractor:
                                 project_type=truncate_string(p_docs.get('project_type'), 100, "project.project_type"),
                                 project_type_guid=truncate_string(project_type_guid, 36, "project.project_type_guid")
                             )
-                            self.session.add(project)
+                            await maybe_await(self.session.add(project))
                             projects_created += 1
         
         # Check if this is a project file (.csproj)
@@ -1040,7 +1044,7 @@ class KnowledgeExtractor:
                     project.nullable_context = docs.get('nullable')
                     project.file_path = truncate_string(normalized_path, 1000, "project.file_path")  # Update to normalized path
                     
-                    self.session.add(project)
+                    await maybe_await(self.session.add(project))
                     logger.info(
                         "project_updated_with_csproj_metadata",
                         project_id=project.id,
@@ -1061,7 +1065,7 @@ class KnowledgeExtractor:
                         lang_version=docs.get('lang_version'),
                         nullable_context=docs.get('nullable')
                     )
-                    self.session.add(project)
+                    await maybe_await(self.session.add(project))
                     projects_created += 1
                     logger.info(
                         "project_created_from_csproj",
@@ -1136,7 +1140,7 @@ class KnowledgeExtractor:
                 primary.partial_definition_files = list(definition_files)
                 primary.merged_from_partial_ids = list(merged_ids)
                 
-                self.session.add(primary)
+                await maybe_await(self.session.add(primary))
 
 
 

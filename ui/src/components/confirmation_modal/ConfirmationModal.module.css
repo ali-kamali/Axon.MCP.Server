@@ -12,7 +12,17 @@
   padding: var(--spacing-md);
 }
 
+.modal_backdrop {
+  position: absolute;
+  inset: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
 .modal_container {
+  position: relative;
+  z-index: 1;
   background: var(--color-background-elevated);
   border: 1px solid var(--color-border);
   border-radius: var(--border-radius-md);

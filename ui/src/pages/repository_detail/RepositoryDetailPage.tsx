@@ -1,14 +1,12 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
 import {
   getRepository,
-  getRepositoryStats,
   getRepositorySyncHistory,
   syncRepository,
   type PaginatedResult,
   type RepositoryResponse,
-  type RepositoryStatsResponse,
   type RepositorySyncAttempt,
 } from "../../services/api";
 import { JobStatusEnum, RepositoryStatusEnum, SourceControlProviderEnum } from "../../types/enums";
@@ -71,7 +69,6 @@ export default function RepositoryDetailPage() {
   const repositoryIdNumber = Number(repositoryId);
 
   const [repository, setRepository] = useState<RepositoryResponse | null>(null);
-  const [stats, setStats] = useState<RepositoryStatsResponse | null>(null);
   const [history, setHistory] = useState<HistoryState>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -99,14 +96,12 @@ export default function RepositoryDetailPage() {
         setPageError(null);
         setActionError(null);
 
-        const [repositoryData, statsData, historyData] = await Promise.all([
+        const [repositoryData, historyData] = await Promise.all([
           getRepository(repositoryIdNumber),
-          getRepositoryStats(repositoryIdNumber),
           getRepositorySyncHistory(repositoryIdNumber, { limit: 15 }),
         ]);
 
         setRepository(repositoryData);
-        setStats(statsData);
         setHistory(historyData);
       } catch (error) {
         const message = error instanceof Error ? error.message : "Failed to load repository details";
@@ -148,44 +143,6 @@ export default function RepositoryDetailPage() {
   const closeNotification = () => {
     setNotification(null);
   };
-
-  const languageBreakdown = useMemo(() => {
-    if (!stats) {
-      return [] as Array<{ language: string; value: number; percentage: number }>;
-    }
-    const entries = Object.entries(stats.languages ?? {});
-    const total = entries.reduce((acc, [, value]) => acc + value, 0);
-    if (total === 0) {
-      return [];
-    }
-    return entries
-      .map(([language, value]) => ({
-        language,
-        value,
-        percentage: (value / total) * 100,
-      }))
-      .sort((a, b) => b.value - a.value)
-      .slice(0, 8);
-  }, [stats]);
-
-  const symbolBreakdown = useMemo(() => {
-    if (!stats) {
-      return [] as Array<{ kind: string; value: number; percentage: number }>;
-    }
-    const entries = Object.entries(stats.symbol_kinds ?? {});
-    const total = entries.reduce((acc, [, value]) => acc + value, 0);
-    if (total === 0) {
-      return [];
-    }
-    return entries
-      .map(([kind, value]) => ({
-        kind,
-        value,
-        percentage: (value / total) * 100,
-      }))
-      .sort((a, b) => b.value - a.value)
-      .slice(0, 8);
-  }, [stats]);
 
   if (Number.isNaN(repositoryIdNumber)) {
     return (

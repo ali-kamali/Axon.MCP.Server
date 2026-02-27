@@ -17,6 +17,23 @@ class SymbolService:
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
+    @staticmethod
+    def _normalize_parameters(parameters: object) -> Optional[dict]:
+        """Normalize legacy parameter payloads to schema-compatible dict values."""
+        if parameters is None:
+            return None
+
+        if isinstance(parameters, dict):
+            return parameters
+
+        if isinstance(parameters, (list, tuple)):
+            if not parameters:
+                return None
+            return {f"param_{i}": value for i, value in enumerate(parameters)}
+
+        # Unknown/invalid payload shape should not break API responses.
+        return None
+
     async def get_symbol(self, symbol_id: int) -> Optional[SymbolResponse]:
         stmt: Select = (
             select(Symbol, File, Repository)
@@ -30,12 +47,7 @@ class SymbolService:
             return None
 
         symbol, file, repository = row
-        
-        # Ensure parameters is a dict or None, not a list
-        parameters = symbol.parameters
-        if isinstance(parameters, list):
-            parameters = None if not parameters else {f"param_{i}": p for i, p in enumerate(parameters)}
-        
+
         return SymbolResponse(
             id=symbol.id,
             file_id=file.id,
@@ -49,7 +61,7 @@ class SymbolService:
             end_line=symbol.end_line,
             signature=symbol.signature,
             documentation=symbol.documentation,
-            parameters=parameters,
+            parameters=self._normalize_parameters(symbol.parameters),
             return_type=symbol.return_type,
             parent_symbol_id=symbol.parent_symbol_id,
             created_at=symbol.created_at,
@@ -64,6 +76,7 @@ class SymbolService:
             select(Relation, Symbol)
             .join(Symbol, Relation.to_symbol_id == Symbol.id)
             .where(Relation.from_symbol_id == symbol_id)
+            .order_by(Relation.id.asc())
         )
         result = await self._session.execute(relations_stmt)
         edges = []

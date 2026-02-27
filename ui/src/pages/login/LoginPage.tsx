@@ -17,7 +17,7 @@ export default function LoginPage() {
         try {
             await login(password);
             navigate("/");
-        } catch (err: any) {
+        } catch (err: unknown) {
             setError("Login failed. Check your password.");
         } finally {
             setLoading(false);
@@ -38,7 +38,6 @@ export default function LoginPage() {
                         onChange={(e) => setPassword(e.target.value)}
                         disabled={loading}
                         placeholder="Enter admin password"
-                        autoFocus
                     />
                 </div>
                 <button type="submit" disabled={loading} className={styles.submitButton}>

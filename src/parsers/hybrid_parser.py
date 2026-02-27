@@ -56,20 +56,16 @@ class HybridCSharpParser:
         """
         try:
             # Check if there's already a running loop
-            loop = asyncio.get_running_loop()
-            if loop.is_running():
-                # We are in an async context. We cannot mistakenly use asyncio.run().
-                # Since strict return type is ParseResult (sync), we can't return a coroutine.
-                # However, usually this method is called from a thread executor (via to_thread),
-                # where no loop is running. 
-                # If we hit this, it's a bug in the caller.
-                logger.error("sync_parse_called_from_async_loop", file_path=file_path)
-                raise RuntimeError("Cannot call synchronous parse() from an active event loop. Use parse_async() instead.")
+            asyncio.get_running_loop()
         except RuntimeError:
             # No running loop, safe to use asyncio.run
-            pass
-            
-        return asyncio.run(self.parse_async(code, file_path))
+            return asyncio.run(self.parse_async(code, file_path))
+
+        # Running loop detected: fail fast and force caller to use parse_async()
+        logger.error("sync_parse_called_from_async_loop", file_path=file_path)
+        raise RuntimeError(
+            "Cannot call synchronous parse() from an active event loop. Use parse_async() instead."
+        )
     
     async def parse_async(self, code: str, file_path: str) -> ParseResult:
         """

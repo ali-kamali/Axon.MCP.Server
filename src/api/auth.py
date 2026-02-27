@@ -1,5 +1,5 @@
 import secrets
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Dict, Any, Optional
 
 from fastapi import Security, HTTPException, status, Depends, Request
@@ -37,10 +37,11 @@ api_key_header = CustomAPIKeyHeader(name="X-API-Key", auto_error=False)
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     """Create a new JWT access token."""
     to_encode = data.copy()
+    now_utc = datetime.now(UTC)
     if expires_delta:
-        expire = datetime.utcnow() + expires_delta
+        expire = now_utc + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(minutes=get_settings().jwt_access_token_expire_minutes)
+        expire = now_utc + timedelta(minutes=get_settings().jwt_access_token_expire_minutes)
     
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, get_settings().jwt_secret_key, algorithm=get_settings().jwt_algorithm)

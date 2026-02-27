@@ -2,7 +2,7 @@ import pytest
 import asyncio
 from unittest.mock import MagicMock, AsyncMock, patch, PropertyMock
 from pathlib import Path
-from datetime import datetime
+from datetime import UTC, datetime
 from src.parsers.roslyn.process_manager import RoslynProcessManager
 
 @pytest.fixture
@@ -61,7 +61,7 @@ async def test_stop_process_graceful(manager, mock_subprocess):
     # Setup running state
     manager._process = mock_subprocess
     manager._started_at = 100
-    manager._heartbeat_task = AsyncMock()
+    manager._heartbeat_task = asyncio.create_task(asyncio.sleep(3600))
     
     with patch("src.parsers.roslyn.process_manager.psutil"):
         await manager.stop(graceful=True)
@@ -98,6 +98,17 @@ async def test_send_request_success(manager, mock_subprocess):
         assert manager._failure_count == 0
 
 @pytest.mark.asyncio
+async def test_send_request_tracks_last_response_time(manager, mock_subprocess):
+    manager._process = mock_subprocess
+    manager._started_at = 100
+
+    with patch("src.parsers.roslyn.process_manager.psutil"), \
+         patch("src.parsers.roslyn.process_manager.time.perf_counter", side_effect=[100.0, 100.25]):
+        await manager.send_request({"command": "test"})
+
+    assert manager._last_response_time == pytest.approx(0.25)
+
+@pytest.mark.asyncio
 async def test_send_request_restart_on_error(manager, mock_subprocess):
     manager._process = mock_subprocess
     
@@ -116,18 +127,37 @@ async def test_send_request_restart_on_error(manager, mock_subprocess):
 @pytest.mark.asyncio
 async def test_get_health(manager, mock_subprocess):
     manager._process = mock_subprocess
-    manager._started_at = datetime.utcnow()
+    manager._started_at = datetime.now(UTC)
     manager._request_count = 10
     manager._failure_count = 1
-    
+
     with patch("src.parsers.roslyn.process_manager.psutil") as mock_psutil:
         mock_proc = mock_psutil.Process.return_value
         mock_proc.is_running.return_value = True
-        mock_proc.memory_info.return_value.rss = 100 * 1024 * 1024 # 100MB
-        
+        mock_proc.memory_info.return_value.rss = 100 * 1024 * 1024  # 100MB
+
         health = await manager.get_health()
-        
+
         assert health.pid == 1234
         assert health.is_healthy is True
         assert health.memory_mb == 100.0
         assert health.request_count == 10
+
+
+@pytest.mark.asyncio
+async def test_restart_serialized_under_concurrency(manager):
+    calls = []
+
+    async def fake_stop(*args, **kwargs):
+        calls.append("stop")
+        await asyncio.sleep(0.02)
+
+    async def fake_start(*args, **kwargs):
+        calls.append("start")
+        await asyncio.sleep(0.02)
+        return True
+
+    with patch.object(manager, "stop", side_effect=fake_stop), patch.object(manager, "start", side_effect=fake_start):
+        await asyncio.gather(manager.restart(), manager.restart())
+
+    assert calls == ["stop", "start", "stop", "start"]

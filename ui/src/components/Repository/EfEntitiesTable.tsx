@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { EfEntityAnalysis } from '../../services/api';
 import styles from './EfEntitiesTable.module.css';
 

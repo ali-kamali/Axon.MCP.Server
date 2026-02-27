@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { isAxiosError } from "axios";
 
 import {
   AccessModifierEnum,
@@ -334,7 +334,7 @@ export type WorkerResponse = {
 };
 
 function isNotFoundError(error: unknown): boolean {
-  if (axios.isAxiosError(error)) {
+  if (isAxiosError(error)) {
     return error.response?.status === 404;
   }
   return false;
@@ -375,7 +375,7 @@ export async function updateRepository(repositoryId: number, payload: Repository
     const res = await api.put<RepositoryResponse>(`/api/v1/repositories/${repositoryId}`, payload);
     return res.data;
   } catch (error) {
-    if (axios.isAxiosError(error)) {
+    if (isAxiosError(error)) {
       const message = error.response?.data?.detail || error.message;
       throw new Error(`Failed to update repository: ${message}`);
     }
@@ -387,7 +387,7 @@ export async function deleteRepository(repositoryId: number): Promise<void> {
   try {
     await api.delete(`/api/v1/repositories/${repositoryId}`);
   } catch (error) {
-    if (axios.isAxiosError(error)) {
+    if (isAxiosError(error)) {
       const message = error.response?.data?.detail || error.message;
       throw new Error(`Failed to delete repository: ${message}`);
     }
@@ -434,7 +434,7 @@ export async function bulkSyncRepositories(repositoryIds: number[]): Promise<{ j
     });
     return res.data;
   } catch (error) {
-    if (axios.isAxiosError(error)) {
+    if (isAxiosError(error)) {
       const message = error.response?.data?.detail || error.message;
       throw new Error(`Failed to sync repositories: ${message}`);
     }
@@ -562,7 +562,7 @@ export async function testMCPSearchCode(params: Record<string, string | number>)
     const res = await api.post<MCPToolResponse>("/api/v1/mcp/tools/search_code", params);
     return res.data;
   } catch (error) {
-    if (axios.isAxiosError(error)) {
+    if (isAxiosError(error)) {
       const message = error.response?.data?.detail || error.message;
       throw new Error(`MCP search_code failed: ${message}`);
     }
@@ -581,7 +581,7 @@ export async function testMCPGetSymbolContext(
     });
     return res.data;
   } catch (error) {
-    if (axios.isAxiosError(error)) {
+    if (isAxiosError(error)) {
       const message = error.response?.data?.detail || error.message;
       throw new Error(`MCP get_symbol_context failed: ${message}`);
     }
@@ -596,7 +596,7 @@ export async function testMCPListRepositories(limit: number = 20): Promise<MCPTo
     });
     return res.data;
   } catch (error) {
-    if (axios.isAxiosError(error)) {
+    if (isAxiosError(error)) {
       const message = error.response?.data?.detail || error.message;
       throw new Error(`MCP list_repositories failed: ${message}`);
     }
@@ -612,7 +612,7 @@ export async function callMCPTool(name: string, arguments_dict: Record<string, u
     });
     return res.data;
   } catch (error) {
-    if (axios.isAxiosError(error)) {
+    if (isAxiosError(error)) {
       const message = error.response?.data?.detail || error.message;
       throw new Error(`MCP tool ${name} failed: ${message}`);
     }

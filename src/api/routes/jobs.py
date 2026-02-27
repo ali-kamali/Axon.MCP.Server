@@ -4,10 +4,10 @@ from typing import Optional, List
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
 
 from src.api.dependencies import get_db_session
-from src.api.schemas.jobs import JobDetailResponse, JobResponse
+from src.api.schemas.jobs import JobDetailResponse
 from src.api.services.job_service import JobService
 from src.config.enums import JobStatusEnum
 from src.api.auth import get_current_user
@@ -18,17 +18,27 @@ router = APIRouter(dependencies=[Depends(get_current_user)])
 
 class LinkMicroservicesRequest(BaseModel):
     """Request model for linking microservices."""
-    repository_ids: Optional[List[int]] = None
 
+    repository_ids: Optional[List[int]] = Field(default=None)
 
-class PaginatedJobResponse:
-    """Paginated job response."""
+    @field_validator("repository_ids")
+    @classmethod
+    def validate_repository_ids(cls, value: Optional[List[int]]) -> Optional[List[int]]:
+        """Ensure repository IDs are positive and deduplicated."""
+        if value is None:
+            return None
 
-    def __init__(self, items: list[JobResponse], total: int, limit: int, offset: int):
-        self.items = items
-        self.total = total
-        self.limit = limit
-        self.offset = offset
+        deduped: list[int] = []
+        seen: set[int] = set()
+
+        for repository_id in value:
+            if repository_id <= 0:
+                raise ValueError("repository_ids must contain only positive integers")
+            if repository_id not in seen:
+                seen.add(repository_id)
+                deduped.append(repository_id)
+
+        return deduped
 
 
 @router.get("/jobs")

@@ -1,6 +1,6 @@
 import re
 from typing import List, Optional, Dict, Set
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from mcp.types import TextContent
@@ -377,13 +377,43 @@ async def trace_request_flow(
             
             # Count layers visited
             layers_visited = set()
+            traversed_symbol_ids: Set[int] = set()
             for symbol_node in [result.root_symbol] + result.related_symbols:
+                traversed_symbol_ids.add(symbol_node.id)
                 if symbol_node.layer:
                     layers_visited.add(symbol_node.layer)
-            
+
             stats["layers_visited"] = layers_visited
-            stats["cross_service_calls"] = 0  # TODO: Extract from relation types
-            stats["event_publications"] = 0   # TODO: Extract from relation types
+
+            if traversed_symbol_ids:
+                # Cross-service API calls are calls in this request flow that link to a different target repository.
+                cross_service_calls_result = await session.execute(
+                    select(func.count(ApiEndpointLink.id))
+                    .select_from(ApiEndpointLink)
+                    .join(OutgoingApiCall, ApiEndpointLink.outgoing_call_id == OutgoingApiCall.id)
+                    .where(
+                        OutgoingApiCall.repository_id == repository_id,
+                        OutgoingApiCall.symbol_id.in_(traversed_symbol_ids),
+                        ApiEndpointLink.target_repository_id.is_not(None),
+                        ApiEndpointLink.target_repository_id != repository_id,
+                    )
+                )
+                stats["cross_service_calls"] = int(cross_service_calls_result.scalar() or 0)
+
+                # Event publications are publisher symbols in this flow that have at least one linked subscriber.
+                event_publications_result = await session.execute(
+                    select(func.count(func.distinct(PublishedEvent.id)))
+                    .select_from(PublishedEvent)
+                    .join(EventLink, EventLink.published_event_id == PublishedEvent.id)
+                    .where(
+                        PublishedEvent.repository_id == repository_id,
+                        PublishedEvent.symbol_id.in_(traversed_symbol_ids),
+                    )
+                )
+                stats["event_publications"] = int(event_publications_result.scalar() or 0)
+            else:
+                stats["cross_service_calls"] = 0
+                stats["event_publications"] = 0
             
             # Format results
             ep_http_method = matching_endpoint.get('http_method', 'GET')
@@ -402,6 +432,8 @@ async def trace_request_flow(
                 f"- **Layers Visited**: {', '.join(sorted(stats['layers_visited'])) if stats['layers_visited'] else 'None'}\n",
                 f"- **Interface Resolutions**: {stats['interface_resolutions']} (DI tracing)\n",
                 f"- **CQRS Handlers**: {stats['cqrs_handlers_found']}\n",
+                f"- **Cross-Service Calls**: {stats['cross_service_calls']}\n",
+                f"- **Event Publications**: {stats['event_publications']}\n",
             ]
             
             if stats['cycles_detected'] > 0:

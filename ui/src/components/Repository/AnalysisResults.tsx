@@ -73,7 +73,15 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = ({ repositoryId }
         if (repositoryId) {
             fetchAnalysisData();
         }
-    }, [repositoryId, activeTab]);
+    }, [
+        repositoryId,
+        activeTab,
+        services.length,
+        entities.length,
+        integrations,
+        configFindings.length,
+        qualityMetrics,
+    ]);
 
     return (
         <div className={styles.container}>

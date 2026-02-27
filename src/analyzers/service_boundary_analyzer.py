@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, cast, String
 from src.database.models import Repository, Service, Project, Symbol
 from src.config.enums import SymbolKindEnum
+from src.utils.async_compat import maybe_await
 
 logger = logging.getLogger(__name__)
 
@@ -259,7 +260,7 @@ class ServiceBoundaryAnalyzer:
                     framework_version=project.target_framework,
                     entry_points=controllers_info if controllers_info else None
                 )
-                session.add(service_obj)
+                await maybe_await(session.add(service_obj))
                 logger.info(f"Created new service: {project.name}")
                 
                 # Flush to get service ID for new services

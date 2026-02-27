@@ -29,10 +29,18 @@ export default function ConfirmationModal({
   }
 
   return (
-    <div className={styles.modal_overlay} onClick={onCancel}>
-      <div className={styles.modal_container} onClick={(e) => e.stopPropagation()}>
+    <div className={styles.modal_overlay}>
+      <button
+        type="button"
+        className={styles.modal_backdrop}
+        onClick={onCancel}
+        aria-label="Close confirmation modal"
+      />
+      <div className={styles.modal_container} role="dialog" aria-modal="true" aria-labelledby="confirmation-modal-title">
         <div className={styles.modal_header}>
-          <h2 className={styles.modal_title}>{title}</h2>
+          <h2 id="confirmation-modal-title" className={styles.modal_title}>
+            {title}
+          </h2>
         </div>
         <div className={styles.modal_body}>
           {typeof message === "string" ? <p className={styles.modal_message}>{message}</p> : message}

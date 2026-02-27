@@ -267,9 +267,11 @@ const TOOLS: ToolDefinition[] = [
   },
 ];
 
+type FormValue = string | number | boolean;
+
 export default function MCPTestPage() {
   const [selectedToolName, setSelectedToolName] = useState<string>(TOOLS[0].name);
-  const [formValues, setFormValues] = useState<Record<string, any>>({});
+  const [formValues, setFormValues] = useState<Record<string, FormValue>>({});
   const [response, setResponse] = useState<MCPToolResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -283,8 +285,30 @@ export default function MCPTestPage() {
     setError(null);
   };
 
-  const handleInputChange = (field: string, value: any) => {
+  const handleInputChange = (field: string, value: FormValue) => {
     setFormValues(prev => ({ ...prev, [field]: value }));
+  };
+
+  const getBooleanFieldValue = (fieldName: string, defaultValue?: ToolField["defaultValue"]): boolean => {
+    const value = formValues[fieldName];
+    if (typeof value === "boolean") {
+      return value;
+    }
+    if (typeof defaultValue === "boolean") {
+      return defaultValue;
+    }
+    return false;
+  };
+
+  const getInputFieldValue = (fieldName: string, defaultValue?: ToolField["defaultValue"]): string | number => {
+    const value = formValues[fieldName];
+    if (typeof value === "string" || typeof value === "number") {
+      return value;
+    }
+    if (typeof defaultValue === "string" || typeof defaultValue === "number") {
+      return defaultValue;
+    }
+    return "";
   };
 
   const handleSubmit = async (event: FormEvent) => {
@@ -295,7 +319,7 @@ export default function MCPTestPage() {
       setError(null);
 
       // Prepare arguments based on field types
-      const args: Record<string, any> = {};
+      const args: Record<string, unknown> = {};
 
       for (const field of selectedTool.fields) {
         const rawValue = formValues[field.name];
@@ -378,7 +402,7 @@ export default function MCPTestPage() {
                     <label className={styles.checkbox_label}>
                       <input
                         type="checkbox"
-                        checked={formValues[field.name] ?? field.defaultValue ?? false}
+                        checked={getBooleanFieldValue(field.name, field.defaultValue)}
                         onChange={(e) => handleInputChange(field.name, e.target.checked)}
                       />
                       {field.label}
@@ -392,7 +416,7 @@ export default function MCPTestPage() {
                         <select
                           id={field.name}
                           className={styles.form_select}
-                          value={formValues[field.name] ?? field.defaultValue ?? ""}
+                          value={getInputFieldValue(field.name, field.defaultValue)}
                           onChange={(e) => handleInputChange(field.name, e.target.value)}
                         >
                           {field.options?.map(opt => (
@@ -404,7 +428,7 @@ export default function MCPTestPage() {
                           id={field.name}
                           type={field.type === "number" ? "number" : "text"}
                           className={styles.form_input}
-                          value={formValues[field.name] ?? ""}
+                          value={getInputFieldValue(field.name)}
                           onChange={(e) => handleInputChange(field.name, e.target.value)}
                           placeholder={field.placeholder}
                           required={field.required}
