@@ -1,0 +1,1180 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Model Context Protocol (MCP) Server for AI IDEs">
+      
+      
+        <meta name="author" content="Ali Kamali">
+      
+      
+        <link rel="canonical" href="https://ali-kamali.github.io/Axon.MCP.Server/engineering/BUG_AUDIT_2026-02-26/">
+      
+      
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.13">
+    
+    
+      
+        <title>Axon.MCP.Server Bug Audit (2026-02-26) - Axon MCP Server</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.7e359304.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#axonmcpserver-bug-audit-2026-02-26" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Axon MCP Server" class="md-header__button md-logo" aria-label="Axon MCP Server" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Axon MCP Server
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Axon.MCP.Server Bug Audit (2026-02-26)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12c0-2.42-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var media,input,key,value,palette=__md_get("__palette");if(palette&&palette.color){"(prefers-color-scheme)"===palette.color.media&&(media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']"),palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent"));for([key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/ali-kamali/Axon.MCP.Server" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    ali-kamali/Axon.MCP.Server
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../product_vision/" class="md-tabs__link">
+        
+  
+    
+  
+  Product Vision
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../architecture/overview/" class="md-tabs__link">
+          
+  
+  Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../api/mcp_tools/" class="md-tabs__link">
+          
+  
+  API Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../guides/setup/" class="md-tabs__link">
+          
+  
+  Guides
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../reference/configuration/" class="md-tabs__link">
+          
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../AXON_ANALYSIS_AND_ROADMAP/" class="md-tabs__link">
+        
+  
+    
+  
+  Roadmap
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Axon MCP Server" class="md-nav__button md-logo" aria-label="Axon MCP Server" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    Axon MCP Server
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/ali-kamali/Axon.MCP.Server" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    ali-kamali/Axon.MCP.Server
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../product_vision/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Product Vision
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Architecture
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Architecture
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/overview/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Overview
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/data_models/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Data Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/infrastructure/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Infrastructure
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/infrastructure_analysis/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Infrastructure Analysis
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    API Reference
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            API Reference
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/mcp_tools/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    MCP Tools
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/rest_api/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    REST API
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Guides
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Guides
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/setup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Setup
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/development/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Development
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/deployment/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Deployment
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/security/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Security
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Reference
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Reference
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/configuration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Configuration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/troubleshooting/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Troubleshooting
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../AXON_ANALYSIS_AND_ROADMAP/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Roadmap
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#audit-log" class="md-nav__link">
+    <span class="md-ellipsis">
+      Audit Log
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#findings" class="md-nav__link">
+    <span class="md-ellipsis">
+      Findings
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Notes
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Notes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rolling-review-follow-ups" class="md-nav__link">
+    <span class="md-ellipsis">
+      Rolling review follow-ups
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#remediation-commit-map-2026-02-26" class="md-nav__link">
+    <span class="md-ellipsis">
+      Remediation commit map (2026-02-26)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="axonmcpserver-bug-audit-2026-02-26">Axon.MCP.Server Bug Audit (2026-02-26)</h1>
+<p>Scope: repository-wide static review (Python backend), compile checks, targeted reliability/security inspection.</p>
+<h2 id="audit-log">Audit Log</h2>
+<ul>
+<li>Ran syntax compile pass across <code>src/</code> and <code>tests/</code> using <code>py_compile</code>.</li>
+<li>Ran targeted source scans for exception swallowing and async misuse patterns.</li>
+<li>Performed manual deep inspection of parser, locking, API, and security utility modules.</li>
+</ul>
+<h2 id="findings">Findings</h2>
+<ul>
+<li>
+<p>[x] <strong>B001 — Syntax error blocks module compilation</strong><br />
+<strong>Severity:</strong> Critical<br />
+<strong>File:</strong> <code>src/parsers/csharp_minimal_api.py:2</code><br />
+<strong>Evidence:</strong> File starts with an indented function at top-level, causing <code>IndentationError</code> (<code>unexpected indent</code>).<br />
+<strong>Impact:</strong> Breaks compile checks and can break packaging/static tooling.<br />
+<strong>Resolution (2026-02-26):</strong> Removed orphaned malformed file <code>src/parsers/csharp_minimal_api.py</code> (duplicate logic already exists in <code>csharp_parser.py</code>). Verified <code>py_compile</code> passes for all <code>src/</code> and <code>tests/</code> modules.</p>
+</li>
+<li>
+<p>[x] <strong>B002 — Event loop handling bug in sync parser wrapper</strong><br />
+<strong>Severity:</strong> High<br />
+<strong>File:</strong> <code>src/parsers/hybrid_parser.py:57-72</code><br />
+<strong>Evidence:</strong> <code>parse()</code> raises <code>RuntimeError</code> when already inside a running loop, then immediately catches all <code>RuntimeError</code> and continues to <code>asyncio.run(...)</code>.<br />
+<strong>Impact:</strong> In async contexts this can still call <code>asyncio.run()</code> and fail with loop-related runtime errors.<br />
+<strong>Resolution (2026-02-26):</strong> Refactored guard logic to only call <code>asyncio.run()</code> when no running loop exists; now explicitly fails fast when called from an active loop.</p>
+</li>
+<li>
+<p>[x] <strong>B003 — Invalid async context manager usage in DB health check</strong><br />
+<strong>Severity:</strong> High<br />
+<strong>File:</strong> <code>src/database/connection_pool.py:93</code><br />
+<strong>Evidence:</strong> <code>async with self.get_session() as session:</code> uses coroutine-returning method without awaiting.<br />
+<strong>Impact:</strong> Health check can fail at runtime with context manager/type errors.<br />
+<strong>Resolution (2026-02-26):</strong> Updated health check to await session acquisition before entering async context manager.</p>
+</li>
+<li>
+<p>[x] <strong>B004 — Redis lock can release another worker’s lock</strong><br />
+<strong>Severity:</strong> High<br />
+<strong>File:</strong> <code>src/workers/distributed_lock.py</code><br />
+<strong>Evidence:</strong> Lock value was constant (<code>"locked"</code>) and release was unconditional <code>delete(lock_key)</code> with no ownership token verification.<br />
+<strong>Impact:</strong> If lock expires/reacquires between operations, one worker may delete another worker’s lock.<br />
+<strong>Resolution (2026-02-26):</strong> Reworked lock acquisition to store per-lock UUID owner tokens (<code>SET NX EX token</code>) and changed release to Lua compare-and-delete (<code>get == token -&gt; del</code>), preventing cross-worker unlock races; refreshed unit coverage in <code>tests/unit/test_distributed_lock.py</code>.</p>
+</li>
+<li>
+<p>[x] <strong>B005 — Advisory lock timeout parameter is unused + raw SQL interpolation</strong><br />
+<strong>Severity:</strong> Medium<br />
+<strong>File:</strong> <code>src/utils/repository_lock.py</code><br />
+<strong>Evidence:</strong> <code>timeout_seconds</code> was accepted but not enforced; SQL was built via f-string instead of bound params.<br />
+<strong>Impact:</strong> Misleading API contract and avoidable SQL construction risk.<br />
+<strong>Resolution (2026-02-26):</strong> Added bounded retry loop to honor <code>timeout_seconds</code> when acquiring advisory locks and replaced interpolated SQL with parameterized <code>text(..., {"lock_id": ...})</code> calls for lock/unlock/check operations; added unit coverage in <code>tests/unit/test_repository_lock.py</code>.</p>
+</li>
+<li>
+<p>[x] <strong>B006 — Secret masking can expose too much for short strings</strong><br />
+<strong>Severity:</strong> Medium<br />
+<strong>File:</strong> <code>src/utils/security.py</code><br />
+<strong>Evidence:</strong> Formula <code>'*' * (len(data) - visible_chars * 2)</code> could become negative for short values; output concatenated overlapping prefix/suffix.<br />
+<strong>Impact:</strong> Sensitive tokens shorter than <code>2*visible_chars</code> could be under-masked.<br />
+<strong>Resolution (2026-02-26):</strong> Updated <code>mask_sensitive_data()</code> to fully mask short values, fully mask for non-positive <code>visible_chars</code>, and only reveal bounded prefix/suffix when enough length exists; added explicit unit coverage in <code>tests/unit/test_security_masking.py</code>.</p>
+</li>
+<li>
+<p>[x] <strong>B007 — CORS defaults conflict with credentialed requests</strong><br />
+<strong>Severity:</strong> Medium<br />
+<strong>Files:</strong> <code>src/config/settings.py</code>, <code>src/api/main.py</code>, <code>.env.example</code>, <code>docs/engineering/SECURITY_DEFAULTS_MIGRATION_2026-02-26.md</code><br />
+<strong>Evidence:</strong> Default <code>api_cors_origins=["*"]</code> while <code>allow_credentials=True</code>.<br />
+<strong>Impact:</strong> Browsers reject wildcard origin for credentialed requests; cookie auth can break and config is insecure by default.<br />
+<strong>Resolution (2026-02-26):</strong> Switched default CORS origins to explicit localhost entries, made credentials conditional (<code>allow_credentials=False</code> when wildcard is configured), and documented migration/override behavior.</p>
+</li>
+<li>
+<p>[x] <strong>B008 — Request-flow statistics contain placeholder zeros</strong><br />
+<strong>Severity:</strong> Medium<br />
+<strong>File:</strong> <code>src/mcp_server/tools/architecture.py</code><br />
+<strong>Evidence:</strong> <code>cross_service_calls</code> and <code>event_publications</code> hardcoded to <code>0</code> with TODO comments.<br />
+<strong>Impact:</strong> Misleading architecture trace output and weak observability.<br />
+<strong>Resolution (2026-02-26):</strong> Replaced placeholders with DB-backed aggregations scoped to traversed flow symbols (<code>ApiEndpointLink</code>/<code>OutgoingApiCall</code> for cross-service calls and <code>PublishedEvent</code>/<code>EventLink</code> for linked publications), and surfaced both metrics in output.</p>
+</li>
+<li>
+<p>[x] <strong>B009 — Insecure auth default for MCP transport</strong><br />
+<strong>Severity:</strong> High<br />
+<strong>Files:</strong> <code>src/config/settings.py</code>, <code>src/api/main.py</code>, <code>.env.example</code>, <code>docs/engineering/SECURITY_DEFAULTS_MIGRATION_2026-02-26.md</code><br />
+<strong>Evidence:</strong> <code>mcp_auth_enabled: bool = False</code> by default.<br />
+<strong>Impact:</strong> MCP endpoints can run without auth unless explicitly hardened.<br />
+<strong>Resolution (2026-02-26):</strong> Changed default to <code>true</code>, updated environment template, and added startup warning for <code>mcp_transport=http</code> with <code>mcp_auth_enabled=false</code> to provide explicit secure onboarding guidance.</p>
+</li>
+<li>
+<p>[x] <strong>B010 — Insecure TLS verification default for Azure DevOps</strong><br />
+<strong>Severity:</strong> Medium<br />
+<strong>Files:</strong> <code>src/config/settings.py</code>, <code>.env.example</code>, <code>docs/engineering/SECURITY_DEFAULTS_MIGRATION_2026-02-26.md</code><br />
+<strong>Evidence:</strong> <code>azuredevops_ssl_verify: bool = False</code> default.<br />
+<strong>Impact:</strong> Encourages insecure TLS behavior and MITM exposure unless overridden.<br />
+<strong>Resolution (2026-02-26):</strong> Changed default to <code>true</code>, updated environment template, and documented explicit opt-out instructions for trusted self-signed environments.</p>
+</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<p>This file is the running defect ledger for stabilization work.</p>
+<h3 id="rolling-review-follow-ups">Rolling review follow-ups</h3>
+<ul>
+<li>
+<p>[x] <strong>R001 — Roslyn process health was reporting stale placeholder response timing</strong><br />
+<strong>Severity:</strong> Low<br />
+<strong>File:</strong> <code>src/parsers/roslyn/process_manager.py</code><br />
+<strong>Evidence:</strong> <code>ProcessHealth.last_response_time</code> always returned <code>0.0</code>, despite active request handling.<br />
+<strong>Impact:</strong> Health/observability views cannot distinguish responsive vs degraded Roslyn round-trip latency.<br />
+<strong>Resolution (2026-02-26):</strong> Added <code>time.perf_counter()</code> round-trip timing in <code>send_request()</code>, persisted <code>_last_response_time</code>, surfaced in both running/non-running <code>get_health()</code> responses, and added regression test <code>tests/unit/test_roslyn_process_manager.py::test_send_request_tracks_last_response_time</code>.</p>
+</li>
+<li>
+<p>[x] <strong>R002 — Test bootstrap failed early because settings required prod secrets in test env</strong><br />
+<strong>Severity:</strong> Medium<br />
+<strong>Files:</strong> <code>src/config/settings.py</code>, <code>tests/unit/test_security_defaults.py</code><br />
+<strong>Evidence:</strong> <code>pytest</code> collection crashed in <code>tests/conftest.py</code> when <code>get_settings()</code> instantiated <code>Settings()</code> without <code>gitlab_token</code>, <code>api_secret_key</code>, and <code>jwt_secret_key</code> in test env.<br />
+<strong>Impact:</strong> Local/CI test runs can fail before executing tests unless unrelated production secrets are injected.<br />
+<strong>Resolution (2026-02-26):</strong> Added environment-aware model validation that still enforces critical secrets outside <code>testing</code>, while allowing explicit test runs to omit them; added regression tests for both behaviors.</p>
+</li>
+<li>
+<p>[x] <strong>R003 — Roslyn process manager used deprecated naive UTC timestamps</strong><br />
+<strong>Severity:</strong> Low<br />
+<strong>Files:</strong> <code>src/parsers/roslyn/process_manager.py</code>, <code>tests/unit/test_roslyn_process_manager.py</code><br />
+<strong>Evidence:</strong> Test runs emitted deprecation warnings for <code>datetime.utcnow()</code> usage in process start/request/uptime tracking paths.<br />
+<strong>Impact:</strong> Future Python versions may remove support; warning noise obscures real regressions.<br />
+<strong>Resolution (2026-02-26):</strong> Migrated to timezone-aware UTC timestamps using <code>datetime.now(UTC)</code> and updated tests to match.</p>
+</li>
+<li>
+<p>[x] <strong>R004 — Heartbeat-task cancellation path could trigger unawaited coroutine warnings in test/runtime edges</strong><br />
+<strong>Severity:</strong> Low<br />
+<strong>Files:</strong> <code>src/parsers/roslyn/process_manager.py</code><br />
+<strong>Evidence:</strong> <code>stop()</code> blindly called <code>self._heartbeat_task.cancel()</code>; when task-like mocks/adapters return awaitables from <code>cancel()</code>, warning noise (<code>coroutine was never awaited</code>) appears.<br />
+<strong>Impact:</strong> Warning noise can mask legitimate failures and weakens shutdown hygiene in non-standard task wrappers.<br />
+<strong>Resolution (2026-02-26):</strong> Hardened cancellation path to await <code>cancel()</code> results when awaitable (<code>inspect.isawaitable</code>) and replaced bare <code>except:</code> blocks around process kill with <code>except Exception</code>.</p>
+</li>
+<li>
+<p>[x] <strong>R005 — FastAPI lifecycle hooks were using deprecated <code>@app.on_event</code> API</strong><br />
+<strong>Severity:</strong> Low<br />
+<strong>Files:</strong> <code>src/api/main.py</code><br />
+<strong>Evidence:</strong> Test runs emitted deprecation warnings indicating <code>on_event</code> startup/shutdown handlers should migrate to lifespan handlers.<br />
+<strong>Impact:</strong> Warning noise obscures real regressions and risks breakage in future FastAPI versions.<br />
+<strong>Resolution (2026-02-26):</strong> Migrated startup/shutdown logic into a single <code>lifespan</code> async context manager and wired it into <code>FastAPI(..., lifespan=...)</code>; also switched request latency timing to <code>time.perf_counter()</code> for monotonic high-resolution duration metrics.</p>
+</li>
+</ul>
+<h3 id="remediation-commit-map-2026-02-26">Remediation commit map (2026-02-26)</h3>
+<ul>
+<li><code>d398f7d</code> — B001 malformed parser file removal.</li>
+<li><code>17dc49a</code> — B002 async-loop guard + B003 DB health-check fix.</li>
+<li><code>ed3bdca</code> — B004/B005 locking hardening, B006 masking hardening, B007/B009/B010 security defaults, B008 request-flow metric correctness, regression tests, and validation docs.</li>
+<li><code>7f25e13</code> — R001 Roslyn response-time health metric + R002 environment-aware secret validation + R003 timezone-aware UTC timestamp hardening, plus Python dependency/parser and React metrics regression hardening/tests.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.c8d2eff1.min.js"></script>
+      
+    
+  </body>
+</html>
