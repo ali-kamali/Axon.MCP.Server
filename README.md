@@ -104,7 +104,7 @@ Modern codebases are complex labyrinths—thousands of files, intricate dependen
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  Client Layer: AI Assistants, IDEs, React UI, REST Clients │
+│  Client Layer: AI Assistants, IDEs, React UI, REST Clients  │
 └─────────────────────────────────────────────────────────────┘
                             │
             ┌───────────────┼───────────────┐
