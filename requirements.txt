@@ -42,7 +42,7 @@ python-multipart==0.0.22
 passlib[bcrypt]==1.7.4
 
 # Configuration
-python-dotenv==1.0.1
+python-dotenv==1.2.2
 
 # Monitoring & Logging
 prometheus-client==0.20.0
