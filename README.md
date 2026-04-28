@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/ali-kamali-axon-mcp-server-badge.png)](https://mseep.ai/app/ali-kamali-axon-mcp-server)
+
 <div align="center">
 
 <!-- Banner Placeholder - Replace with actual logo/banner image -->
