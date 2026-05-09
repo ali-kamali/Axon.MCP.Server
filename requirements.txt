@@ -10,7 +10,7 @@ redis==5.0.3
 
 # GitLab & Git
 python-gitlab==4.4.0
-gitpython==3.1.42
+gitpython==3.1.50
 
 # Code Parsing
 tree-sitter>=0.25.0
